@@ -3,6 +3,7 @@ from random import randrange
 
 from config import *
 
+
 class Tile(pg.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
@@ -13,14 +14,15 @@ class Tile(pg.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
 
+
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(player_group, all_sprites)
         self.image = gg
-        self.x = x
-        self.y = y
+        self.x = 400
+        self.y = 300
         self.width, self.height = self.image.get_size()
-        self.rect = pg.Rect(self.x, self.y, self.width, self.height)
+        self.rect = pg.Rect(x, y, self.width, self.height)
         self.speed = 5
 
         self.timer = 0
@@ -31,15 +33,22 @@ class Player(pg.sprite.Sprite):
 
         rel_x, rel_y = mouse_x - self.x, mouse_y - self.y
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
-
-        player_weapon_copy = pg.transform.rotate(player_weapon, angle)
+        if int(angle) not in correct_radius:
+            player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
+        else:
+            player_weapon_copy = pg.transform.rotate(player_weapon, angle)
 
         display.blit(player_weapon_copy, (
-            self.rect.x + 15 - int(player_weapon.get_width() / 2),
-            self.rect.y + 25 - int(player_weapon_copy.get_height() / 2)))
+            self.rect.x + 40 - int(player_weapon.get_width() / 2),
+            self.rect.y - 30 - int(player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
         self.handle_weapons(display)
+        if self.timer == 0:
+            if pg.sprite.spritecollideany(self, enemys_group):
+                self.get_damage()
+        else:
+            self.timer -= 1
 
     def move(self, axis):  # True - лево, право; False - прямо, вперёд
         if axis == 'лево':
@@ -64,15 +73,9 @@ class Player(pg.sprite.Sprite):
                     return
             self.rect = self.rect.move(0, self.speed)
 
-        if self.timer == 0:
-            if pg.sprite.spritecollideany(self, enemys_group):
-                self.get_damage()
-        else:
-            self.timer -= 1
-
     def get_damage(self):
         self.hp -= 1
-        self.timer = 25
+        self.timer = 60
         if self.hp == 0:
             exit()
 
@@ -100,6 +103,9 @@ class PlayerBullet(pg.sprite.Sprite):
                     self.kill()
                     enemy.get_damage()
                     return
+        if pg.sprite.spritecollideany(self, wall_group):
+            self.kill()
+            return
 
         self.rect = self.rect.move(-int(self.x_vel), -int(self.y_vel))
 
@@ -125,14 +131,14 @@ class TarakanEnemy(pg.sprite.Sprite):
                 for x in wall_group:
                     if x.rect.colliderect(self.rect.move(self.speed, 0)):
                         return
-                self.rect = self.rect.move(1,0)
+                self.rect = self.rect.move(1, 0)
                 self.image = tarakan
             elif cx > player_x:
                 for x in wall_group:
                     if x.rect.colliderect(self.rect.move(-self.speed, 0)):
                         return
                 self.image = tarakan_reverse
-                self.rect = self.rect.move(-1,0)
+                self.rect = self.rect.move(-1, 0)
         if cy != player_y:
             if cy < player_y:
                 for x in wall_group:
@@ -164,3 +170,17 @@ class Camera:
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - self.W // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - self.H // 2)
+
+
+def generate_level(level):
+    player, x, y = None, None, None
+    for y in range(len(level)):
+        for x in range(len(level[y])):
+            if level[y][x] == '.':
+                Tile('empty', x, y)
+            elif level[y][x] == '#':
+                Tile('wall', x, y)
+            elif level[y][x] == '@':
+                Tile('empty', x, y)
+                player = Player(tile_width * x, tile_height * y)
+    return player, x, y
