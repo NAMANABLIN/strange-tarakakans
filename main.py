@@ -1,6 +1,6 @@
 from classes import *
 from config import *
-
+from menu_1 import main_menu
 pg.init()
 main_menu()
 
