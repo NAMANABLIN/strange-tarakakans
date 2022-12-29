@@ -57,3 +57,4 @@ wall_group = pg.sprite.Group()
 tiles_group = pg.sprite.Group()
 
 correct_radius = range(-90,90+1)
+kills  = 0

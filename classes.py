@@ -25,22 +25,26 @@ class Player(pg.sprite.Sprite):
         self.rect = pg.Rect(x, y, self.width, self.height)
         self.speed = 5
 
+        self.player_weapon_copy = player_weapon
+
         self.timer = 0
         self.hp = 3
+
+        self.death = False
 
     def handle_weapons(self, display):
         mouse_x, mouse_y = pg.mouse.get_pos()
 
-        rel_x, rel_y = mouse_x - self.x, mouse_y - self.y
+        rel_x, rel_y = mouse_x - self.rect.x + 40 - int(player_weapon.get_width() / 2), mouse_y - self.rect.y - 30 - int(self.player_weapon_copy.get_height() / 2)
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
-        if int(angle) not in correct_radius:
-            player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
-        else:
-            player_weapon_copy = pg.transform.rotate(player_weapon, angle)
+        # if int(angle) not in correct_radius:
+        #     self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
+        # else:
+        self.player_weapon_copy = pg.transform.rotate(player_weapon, angle)
 
-        display.blit(player_weapon_copy, (
+        display.blit(self.player_weapon_copy, (
             self.rect.x + 40 - int(player_weapon.get_width() / 2),
-            self.rect.y - 30 - int(player_weapon_copy.get_height() / 2)))
+            self.rect.y - 30 - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
         self.handle_weapons(display)
@@ -77,7 +81,11 @@ class Player(pg.sprite.Sprite):
         self.hp -= 1
         self.timer = 60
         if self.hp == 0:
-            exit()
+            print(kills)
+            self.death = True
+
+    def alive(self):
+        return self.death
 
 
 class PlayerBullet(pg.sprite.Sprite):
@@ -152,9 +160,11 @@ class TarakanEnemy(pg.sprite.Sprite):
                 self.rect = self.rect.move(0, -1)
 
     def get_damage(self):
+        global kills
         self.hp -= 1
         if self.hp == 0:
             self.kill()
+            kills += 1
 
 
 class Camera:
@@ -183,4 +193,7 @@ def generate_level(level):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 player = Player(tile_width * x, tile_height * y)
+            elif level[y][x] == 'e':
+                Tile('empty', x, y)
+                TarakanEnemy(tile_width * x, tile_height * y)
     return player, x, y
