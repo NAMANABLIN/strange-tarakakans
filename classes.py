@@ -4,24 +4,12 @@ from random import randrange
 from config import *
 
 
-class Tile(pg.sprite.Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tiles_group, all_sprites)
-        if tile_type == 'wall':
-            self.add(wall_group)
-        self.image = tile_images[tile_type]
-        self.x, self.y = pos_x, pos_y
-        self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
-
-
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(player_group, all_sprites)
-        self.image = gg
         self.x = 400
         self.y = 300
-        self.width, self.height = self.image.get_size()
+        self.width, self.height = gg.get_size()
         self.rect = pg.Rect(x, y, self.width, self.height)
         self.speed = 5
 
@@ -32,19 +20,28 @@ class Player(pg.sprite.Sprite):
 
         self.death = False
 
+        self.left = False
+        self.right = False
+        self.animCount = 0
+
     def handle_weapons(self, display):
         mouse_x, mouse_y = pg.mouse.get_pos()
 
-        rel_x, rel_y = mouse_x - self.rect.x + 40 - int(player_weapon.get_width() / 2), mouse_y - self.rect.y - 30 - int(self.player_weapon_copy.get_height() / 2)
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
+        rel_x, rel_y = mouse_x - self.rect.x+20 - int(
+            player_weapon.get_width() / 2), mouse_y - self.rect.y+ 20 - int(self.player_weapon_copy.get_height() / 2)
+        angle = round((180 / math.pi) * -math.atan2(rel_y, rel_x))
         # if int(angle) not in correct_radius:
         #     self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
         # else:
-        self.player_weapon_copy = pg.transform.rotate(player_weapon, angle)
+        if -90 <= angle <= 90:
+            self.player_weapon_copy = pg.transform.rotate(player_weapon, angle)
+        else:
+            self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
+
 
         display.blit(self.player_weapon_copy, (
-            self.rect.x + 40 - int(player_weapon.get_width() / 2),
-            self.rect.y - 30 - int(self.player_weapon_copy.get_height() / 2)))
+            self.rect.x +20 - int(player_weapon.get_width() / 2),
+            self.rect.y+ 20 - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
         self.handle_weapons(display)
@@ -54,23 +51,38 @@ class Player(pg.sprite.Sprite):
         else:
             self.timer -= 1
 
+    def draw(self, display):
+        if self.left:
+            display.blit(gg_left[self.animCount // 30], (self.rect.x, self.rect.y))
+        elif self.right:
+            display.blit(gg_right[self.animCount // 30], (self.rect.x, self.rect.y))
+        else:
+            display.blit(gg_stand[round(self.animCount / 60)], (self.rect.x, self.rect.y))
+        self.animCount += 1
+
+        if self.animCount == 60:
+            self.animCount = 0
+
     def move(self, axis):  # True - лево, право; False - прямо, вперёд
         if axis == 'лево':
             for x in wall_group:
                 if x.rect.colliderect(self.rect.move(-self.speed, 0)):
                     return
+            self.left = True
+            self.right = False
             self.rect = self.rect.move(-self.speed, 0)
         if axis == 'право':
             for x in wall_group:
                 if x.rect.colliderect(self.rect.move(self.speed, 0)):
                     return
+            self.left = False
+            self.right = True
             self.rect = self.rect.move(self.speed, 0)
         if axis == 'вперёд':
             for x in wall_group:
                 if x.rect.colliderect(self.rect.move(0, -self.speed)):
                     return
             self.rect = self.rect.move(0, -self.speed)
-
         if axis == 'назад':
             for x in wall_group:
                 if x.rect.colliderect(self.rect.move(0, self.speed)):
@@ -81,7 +93,6 @@ class Player(pg.sprite.Sprite):
         self.hp -= 1
         self.timer = 60
         if self.hp == 0:
-            print(kills)
             self.death = True
 
     def alive(self):
@@ -180,6 +191,17 @@ class Camera:
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - self.W // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - self.H // 2)
+
+
+class Tile(pg.sprite.Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(tiles_group, all_sprites)
+        if tile_type == 'wall':
+            self.add(wall_group)
+        self.image = tile_images[tile_type]
+        self.x, self.y = pos_x, pos_y
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
 
 
 def generate_level(level):

@@ -26,7 +26,6 @@ def load_level(filename):
 
     return level_map
 
-
 size = W, H = 800, 600
 speed = 15
 FPS = 60
@@ -41,7 +40,10 @@ game_over_image.set_alpha(100)
 
 logo = pg.transform.scale(load_image('logo.png'), (32, 32))
 
-gg = pg.transform.scale(load_image('gg_01.png'), (32, 54))
+gg_right = [load_image(f'gg_right_0{i}.png') for i in range(2, 4)]
+gg_left = [load_image(f'gg_left_0{i}.png') for i in range(2, 4)]
+gg_stand = [load_image(f'gg_stand_0{i}.png') for i in range(1, 3)]
+gg = load_image('gg_right_01.png')
 gg_reverse = pg.transform.flip(gg, True, False)
 
 tarakan = pg.transform.scale(load_image('enemy_01.png'), (42, 62))
@@ -70,13 +72,12 @@ tiles_group = pg.sprite.Group()
 correct_radius = range(-90, 90 + 1)
 kills = 0
 
-
-def updates(sc, lol, player=None):
+def updates(sc, player=None):
     tiles_group.draw(sc)
     wall_group.draw(sc)
     bullets_group.draw(sc)
     enemys_group.draw(sc)
-    if not lol:
+    if player is not None:
         bullets_group.update()
         enemys_group.update(player)
-        player_group.draw(sc)
+        player.draw(sc)
