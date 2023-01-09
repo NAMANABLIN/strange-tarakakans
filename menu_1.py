@@ -8,7 +8,6 @@ left = 'A'
 right = 'D'
 shooting = 'ЛКМ'
 
-
 def menu(screen):
     pygame.display.set_caption('Тараканы!')
     pg.display.set_icon(logo)
@@ -175,7 +174,6 @@ def main_menu(main_or_esc=True):
                             elif buttons.index(i) == 2:  # control
                                 buttons, screen_value = control(forward, back, left, right, shooting)
                                 break
-                    print(sounds)
 
                 elif screen_value == 'control':
                     if buttons[0][0] <= x <= buttons[0][0] + buttons[0][2] and buttons[0][1] <= y <= buttons[0][1] + \

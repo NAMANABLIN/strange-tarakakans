@@ -26,17 +26,19 @@ def load_level(filename):
 
     return level_map
 
+
 size = W, H = 800, 600
 speed = 15
 FPS = 60
 
 BLACK = (0, 0, 0)
-WHITE = (0, 0, 0)
+WHITE = (255, 255, 255)
 GREY = (100, 100, 100)
 
 game_over_image = pg.Surface(size)
 game_over_image.fill(BLACK)
 game_over_image.set_alpha(100)
+
 
 logo = pg.transform.scale(load_image('logo.png'), (32, 32))
 
@@ -71,6 +73,7 @@ tiles_group = pg.sprite.Group()
 
 correct_radius = range(-90, 90 + 1)
 kills = 0
+
 
 def updates(sc, player=None):
     tiles_group.draw(sc)

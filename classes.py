@@ -27,8 +27,8 @@ class Player(pg.sprite.Sprite):
     def handle_weapons(self, display):
         mouse_x, mouse_y = pg.mouse.get_pos()
 
-        rel_x, rel_y = mouse_x - self.rect.x+20 - int(
-            player_weapon.get_width() / 2), mouse_y - self.rect.y+ 20 - int(self.player_weapon_copy.get_height() / 2)
+        rel_x, rel_y = mouse_x - self.rect.x+25 - int(
+            player_weapon.get_width() / 2), mouse_y - self.rect.y+ 25 - int(self.player_weapon_copy.get_height() / 2)
         angle = round((180 / math.pi) * -math.atan2(rel_y, rel_x))
         # if int(angle) not in correct_radius:
         #     self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
@@ -40,8 +40,8 @@ class Player(pg.sprite.Sprite):
 
 
         display.blit(self.player_weapon_copy, (
-            self.rect.x +20 - int(player_weapon.get_width() / 2),
-            self.rect.y+ 20 - int(self.player_weapon_copy.get_height() / 2)))
+            self.rect.x +25 - int(player_weapon.get_width() / 2),
+            self.rect.y+ 25 - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
         self.handle_weapons(display)
@@ -171,12 +171,9 @@ class TarakanEnemy(pg.sprite.Sprite):
                 self.rect = self.rect.move(0, -1)
 
     def get_damage(self):
-        global kills
         self.hp -= 1
         if self.hp == 0:
             self.kill()
-            kills += 1
-
 
 class Camera:
     def __init__(self, size):
