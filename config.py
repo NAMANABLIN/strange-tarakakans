@@ -1,6 +1,7 @@
-import pygame as pg
-import sys
 import os
+import sys
+
+import pygame as pg
 
 
 def load_image(name, colorkey=None):
@@ -10,6 +11,7 @@ def load_image(name, colorkey=None):
         sys.exit()
     image = pg.image.load(fullname)
     return image
+
 
 def load_level(filename):
     filename = os.path.join(filename)
@@ -22,18 +24,27 @@ def load_level(filename):
 
     max_width = max(map(len, level_map))
 
-    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+    return level_map
 
 
-MALAHIT = (24, 161, 86)
+size = W, H = 800, 600
+speed = 15
+FPS = 60
+
 BLACK = (0, 0, 0)
 WHITE = (0, 0, 0)
 GREY = (100, 100, 100)
 
-gg = pg.transform.scale(load_image('gg.png'), (24, 52))
+game_over_image = pg.Surface(size)
+game_over_image.fill(BLACK)
+game_over_image.set_alpha(100)
+
+logo = pg.transform.scale(load_image('logo.png'), (32, 32))
+
+gg = pg.transform.scale(load_image('gg_01.png'), (32, 54))
 gg_reverse = pg.transform.flip(gg, True, False)
 
-tarakan = pg.transform.scale(load_image('tarakan.png'), (14, 26))
+tarakan = pg.transform.scale(load_image('enemy_01.png'), (42, 62))
 tarakan_reverse = pg.transform.flip(tarakan, True, False)
 
 bullet = load_image('bullet.png')
@@ -41,10 +52,10 @@ player_weapon = load_image('gun.png')
 player_weapon_reverse = pg.transform.flip(player_weapon, False, True)
 
 tile_images = {
-    'wall': load_image('box.png'),
-    'empty': load_image('grass.png')}
+    'wall': load_image('wall.png'),
+    'empty': load_image('floor.png')}
 
-tile_width = tile_height = 50
+tile_width = tile_height = 32
 pg.init()
 font = pg.font.SysFont("Comic Sans MS", 30)
 font_color = (0, 0, 0)
@@ -56,5 +67,16 @@ bullets_group = pg.sprite.Group()
 wall_group = pg.sprite.Group()
 tiles_group = pg.sprite.Group()
 
-correct_radius = range(-90,90+1)
-kills  = 0
+correct_radius = range(-90, 90 + 1)
+kills = 0
+
+
+def updates(sc, lol, player=None):
+    tiles_group.draw(sc)
+    wall_group.draw(sc)
+    bullets_group.draw(sc)
+    enemys_group.draw(sc)
+    if not lol:
+        bullets_group.update()
+        enemys_group.update(player)
+        player_group.draw(sc)

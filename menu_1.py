@@ -2,8 +2,6 @@ import pygame
 
 from config import *
 
-size = width, height = 800, 600
-
 forward = 'W'
 back = 'S'
 left = 'A'
@@ -12,24 +10,26 @@ shooting = 'ЛКМ'
 
 
 def menu(screen):
-    pygame.display.set_caption('menu')
+    pygame.display.set_caption('Тараканы!')
+    pg.display.set_icon(logo)
+
     screen.fill((60, 113, 125))
     pygame.display.flip()
-    buttons_coord = [(width // 2 - 190 // 2, height - 100, 190, 50), (width // 2 - 190 // 2, height - 160, 190, 50),
-                     (width // 2 - 190 // 2, height - 220, 190, 50), (width // 2 - 190 // 2, height - 280, 190, 50)]
+    buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50), (W // 2 - 190 // 2, H - 160, 190, 50),
+                     (W // 2 - 190 // 2, H - 220, 190, 50), (W // 2 - 190 // 2, H - 280, 190, 50)]
     button(buttons_coord, screen)
 
     text = font.render("Продолжить", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2, height - 280, 180, 50))
+    screen.blit(text, (W // 2 - 190 // 2, H - 280, 180, 50))
 
     text = font.render("Новая игра", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 17, height - 220, 180, 50))
+    screen.blit(text, (W // 2 - 190 // 2 + 17, H - 220, 180, 50))
 
     text = font.render("Настройки", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 20, height - 160, 180, 50))
+    screen.blit(text, (W // 2 - 190 // 2 + 20, H - 160, 180, 50))
 
     text = font.render("Выйти", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 45, buttons_coord[0][1]))
+    screen.blit(text, (W // 2 - 190 // 2 + 45, buttons_coord[0][1]))
 
     pygame.display.flip()
     screen_value = 'menu'
@@ -37,14 +37,13 @@ def menu(screen):
 
 
 def newgame():
-    screen = pygame.display.set_mode(size)
     screen_value = 'newgame'
     return screen_value
 
 
 def continuegame():
-    screen = pygame.display.set_mode(size)
-    # screen_value = 'continue'
+    screen_value = 'continue'
+    return screen_value
 
 
 def control(forward, back, left, right, shooting):
@@ -52,51 +51,50 @@ def control(forward, back, left, right, shooting):
     pygame.display.set_caption('control')
     screen.fill((60, 113, 125))
     screen.blit(font.render("Вперёд" + (18 - 6 - len(forward)) * ' ' + forward, 1, font_color),
-                (width // 30 + 10, height - 550, 180, 50))
+                (W // 30 + 10, H - 550, 180, 50))
     screen.blit(font.render("Назад" + (19 - 5 - len(back)) * ' ' + back, 1, font_color),
-                (width // 30 + 10, height - 515, 180, 50))
+                (W // 30 + 10, H - 515, 180, 50))
     screen.blit(font.render("Влево" + (19 - 5 - len(left)) * ' ' + left, 1, font_color),
-                (width // 30 + 10, height - 485, 180, 50))
+                (W // 30 + 10, H - 485, 180, 50))
     screen.blit(font.render("Вправо" + (18 - 6 - len(right)) * ' ' + right, 1, font_color),
-                (width // 30 + 10, height - 450, 180, 50))
+                (W // 30 + 10, H - 450, 180, 50))
     screen.blit(font.render("Стрельба" + (18 - 8 - len(shooting)) * ' ' + shooting, 1, font_color),
-                (width // 30 + 10, height - 415, 180, 50))
-    buttons_coord = [(width // 2 - 190 // 2, height - 100, 190, 50)]
+                (W // 30 + 10, H - 415, 180, 50))
+    buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50)]
     pygame.draw.rect(screen, (50, 92, 102), buttons_coord[0], 0)
     text = font.render("Назад", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 50, height - 100))
+    screen.blit(text, (W // 2 - 190 // 2 + 50, H - 100))
     screen_value = 'control'
     return buttons_coord, screen_value
 
 
 def options(s, m):
-    pygame.display.set_caption('options')
     screen = pygame.display.set_mode(size)
     screen.fill((60, 113, 125))
     screen_value = 'options'
 
-    buttons_coord = [(width // 30, height - 480, 190, 50), (width // 30, height - 420, 190, 50),
-                     (width // 30, height - 360, 190, 50), (width // 30, height - 300, 190, 50)]
+    buttons_coord = [(W // 30, H - 480, 190, 50), (W // 30, H - 420, 190, 50),
+                     (W // 30, H - 360, 190, 50), (W // 30, H - 300, 190, 50)]
 
     button(buttons_coord, screen)
 
     text = font.render("Звук", 1, font_color)
-    screen.blit(text, (width // 30 + 60, height - 480, 180, 50))
+    screen.blit(text, (W // 30 + 60, H - 480, 180, 50))
 
     text = font.render("Музыка", 1, font_color)
-    screen.blit(text, (width // 30 + 40, height - 420, 180, 50))
+    screen.blit(text, (W // 30 + 40, H - 420, 180, 50))
 
     text = font.render("Управление", 1, font_color)
-    screen.blit(text, (width // 30 + 10, height - 360, 180, 50))
+    screen.blit(text, (W // 30 + 10, H - 360, 180, 50))
 
     text = font.render("Назад", 1, font_color)
-    screen.blit(text, (width // 30 + 55, height - 300))
+    screen.blit(text, (W // 30 + 55, H - 300))
 
-    pygame.draw.line(screen, (58, 65, 66), (width - 550, height - 455), (width - 300, height - 455), width=5)
-    pygame.draw.line(screen, (58, 65, 66), (width - 550, height - 395), (width - 300, height - 395), width=5)
+    pygame.draw.line(screen, (58, 65, 66), (W - 550, H - 455), (W - 300, H - 455), width=5)
+    pygame.draw.line(screen, (58, 65, 66), (W - 550, H - 395), (W - 300, H - 395), width=5)
 
-    sound = pygame.draw.rect(screen, (50, 92, 102), (s, height - 470, 10, 30))
-    music = pygame.draw.rect(screen, (50, 92, 102), (m, height - 410, 10, 30))
+    sound = pygame.draw.rect(screen, (50, 92, 102), (s, H - 470, 10, 30))
+    music = pygame.draw.rect(screen, (50, 92, 102), (m, H - 410, 10, 30))
 
     sounds = [(sound.x, sound.y, 10, 30), (music.x, music.y, 10, 30)]
 
@@ -106,29 +104,29 @@ def options(s, m):
 
 
 def button(buttons_coord, screen):
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[0], 0)
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[1], 0)
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[2], 0)
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[3], 0)
+    for x in buttons_coord:
+        pygame.draw.rect(screen, (50, 92, 102), x, 0)
 
 
-def main_menu():
+def main_menu(main_or_esc=True):
     global forward, back, left, right, shooting
     key = ''  # !!!!!
     control_list = [forward, back, left, right, shooting]
     pygame.init()
     screen = pygame.display.set_mode(size)
 
-    buttons, screen_value = menu(screen)
     running = True
     clock = pygame.time.Clock()
-    s = m = width - 550
-    buttons, screen_value = menu(screen)
-    running = True
+    s = m = W - 550
+    if main_or_esc:
+        buttons, screen_value = menu(screen)
+    else:
+        buttons, screen_value, sounds, sound, music = options(s, m)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x = event.pos[0]
                 y = event.pos[1]
@@ -148,32 +146,37 @@ def main_menu():
                     if sounds[0][0] <= x <= sounds[0][0] + sounds[0][2] and sounds[0][1] <= y <= sounds[0][1] + \
                             sounds[0][3]:  # sound
                         while pygame.mouse.get_pressed()[0]:
-                            if width - 550 <= pygame.mouse.get_pos()[0]:
-                                if pygame.mouse.get_pos()[0] <= width - 305:
+                            if W - 550 <= pygame.mouse.get_pos()[0]:
+                                if pygame.mouse.get_pos()[0] <= W - 305:
                                     s = pygame.mouse.get_pos()[0]
                                 else:
-                                    s = width - 305
+                                    s = W - 305
                             else:
-                                s = width - 550
+                                s = W - 550
                             buttons, screen_value, sounds, sound, music = options(s, m)
                     if sounds[1][0] <= x <= sounds[1][0] + sounds[1][2] and sounds[1][1] <= y <= sounds[1][1] + \
                             sounds[1][3]:  # music
                         while pygame.mouse.get_pressed()[0]:
-                            if width - 550 <= pygame.mouse.get_pos()[0]:
-                                if pygame.mouse.get_pos()[0] <= width - 305:
+                            if W - 550 <= pygame.mouse.get_pos()[0]:
+                                if pygame.mouse.get_pos()[0] <= W - 305:
                                     m = pygame.mouse.get_pos()[0]
                                 else:
-                                    m = width - 305
+                                    m = W - 305
                             else:
-                                m = width - 550
+                                m = W - 550
                             buttons, screen_value, sounds, sound, music = options(s, m)
                     for i in buttons:
                         if i[0] <= x <= i[0] + i[2] and i[1] <= y <= i[1] + i[3]:
                             if buttons.index(i) == 3:  # back
-                                buttons, screen_value = menu(screen)
+                                if main_or_esc:
+                                    buttons, screen_value = menu(screen)
+                                else:
+                                    running = False
                             elif buttons.index(i) == 2:  # control
                                 buttons, screen_value = control(forward, back, left, right, shooting)
                                 break
+                    print(sounds)
+
                 elif screen_value == 'control':
                     if buttons[0][0] <= x <= buttons[0][0] + buttons[0][2] and buttons[0][1] <= y <= buttons[0][1] + \
                             buttons[0][3]:
@@ -194,6 +197,8 @@ def main_menu():
                         forward, back, left, right, shooting = control_list
                         control(forward, back, left, right, shooting)
                         control_list = [forward, back, left, right, shooting]
+                elif screen_value == 'newgame':
+                    return
             if event.type == pygame.KEYDOWN:
                 if event.key in range(97, 122):
                     if screen_value == 'control':
@@ -208,5 +213,7 @@ def main_menu():
                             control(forward, back, left, right, shooting)
                             key = ''
                         control_list = [forward, back, left, right, shooting]
+        clock.tick(60)
         pygame.display.flip()
-    pygame.quit()
+    if main_or_esc:
+        pygame.quit()
