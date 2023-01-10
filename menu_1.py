@@ -225,7 +225,7 @@ def main_menu(main_or_esc=True):
                 elif screen_value == 'newgame':
                     return
             if event.type == pygame.KEYDOWN:
-                if event.key in range(97, 122):
+                if event.key in range(97, 123):
                     if screen_value == 'control':
                         if chr(event.key).upper() in control_list and '' not in control_list:
                             key = control_list.index(chr(event.key).upper())
