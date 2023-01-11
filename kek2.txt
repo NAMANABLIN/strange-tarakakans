@@ -6,12 +6,12 @@
 #...........#        #...........#
 #########..##        #..##########
 pppppppp#..#         #..#
-pppppppp#e.#         #.e#
+pppppppp#e.#         #e.#
 pppppppp#..#         #..#
 pppppppp#..#         #..#
 pppppppp#..###########..#
-pppppppp#...............#
 pppppppp#....@..........#
+pppppppp#...............#
 pppppppp#################
 
 
