@@ -34,7 +34,7 @@ def load_level(filename: str) -> list:
         level_map = list(split_list(layers['data'], layers['width']))
     return level_map
 
-
+@lru_cache(maxsize=20)
 def change_brightness(image, extent):
     brightness_multiplier = 1.0
     brightness_multiplier += (extent / 100)
