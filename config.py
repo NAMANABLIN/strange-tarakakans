@@ -101,6 +101,7 @@ bullet = load_image('bullet.png')
 player_weapon = load_image('gun.png')
 player_weapon_reverse = pg.transform.flip(player_weapon, False, True)
 
+fon = load_image('fon.png')
 tiles = [load_image(f'tile_0{i}.png') for i in range(1, 11)]
 
 tile_width = tile_height = 32

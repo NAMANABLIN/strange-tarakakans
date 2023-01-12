@@ -10,7 +10,7 @@ def menu(screen):
     pygame.display.set_caption('Тараканы!')
     pg.display.set_icon(logo)
 
-    screen.fill((60, 113, 125))
+    screen.blit(fon, (0,0))
     pygame.display.flip()
     buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50), (W // 2 - 190 // 2, H - 160, 190, 50),
                      (W // 2 - 190 // 2, H - 220, 190, 50), (W // 2 - 190 // 2, H - 280, 190, 50)]
@@ -47,7 +47,7 @@ def control():
     global control_list
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Управление')
-    screen.fill((60, 113, 125))
+    screen.blit(fon, (0,0))
     screen.blit(font.render("Вперёд" + (18 - 6 - len(control_list[0])) * ' ' + control_list[0], 1, font_color),
                 (W // 30 + 10, H - 550, 180, 50))
     screen.blit(font.render("Назад" + (19 - 5 - len(control_list[1])) * ' ' + control_list[1], 1, font_color),
@@ -78,7 +78,7 @@ def control():
 
 def options(s, m):
     screen = pygame.display.set_mode(size)
-    screen.fill((60, 113, 125))
+    screen.blit(fon, (0, 0))
     pygame.display.set_caption('Настройки')
     screen_value = 'options'
 

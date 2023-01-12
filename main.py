@@ -1,7 +1,7 @@
 from classes import *
 from menu_1 import main_menu
 from random import randint
-# main_menu()
+main_menu()
 
 sc = pg.display.set_mode(size)
 pg.display.set_caption('Тараканы!')
@@ -9,7 +9,7 @@ pg.display.set_icon(logo)
 clock = pg.time.Clock()
 
 camera = Camera(size)
-player, level_x, level_y = generate_level(load_level('level3.json'))
+player, level_x, level_y = generate_level(load_level('level1.json'))
 while True:
     sc.fill(BLACK)
     if player.status():
