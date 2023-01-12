@@ -1,4 +1,5 @@
 import math
+import time
 from random import randrange, randint
 
 from config import *
@@ -115,9 +116,11 @@ class PlayerBullet(pg.sprite.Sprite):
 
         self.speed = 10
         self.angle = math.atan2(y - mouse_y, x - mouse_x)
-        self.x_vel = math.cos(self.angle) * self.speed + randint(-1, 1)
-        self.y_vel = math.sin(self.angle) * self.speed + randint(-1, 1)
+        rnd = randint(-1, 1)
+        self.x_vel = math.cos(self.angle) * self.speed + rnd
+        self.y_vel = math.sin(self.angle) * self.speed + rnd
         print(self.x_vel, self.y_vel)
+
 
     def update(self):
         if pg.sprite.spritecollideany(self, enemys_group):
@@ -148,23 +151,31 @@ class TarakanEnemy(pg.sprite.Sprite):
         self.right = False
         self.animCount = 0
 
+        self.timer = 0
+
+
     def update(self, player):
         player_x, player_y = player.rect.x, player.rect.y
         cx, cy = self.rect.x, self.rect.y
+        if self.timer:
+            self.image = change_brightness(tarakan_right[self.animCount // 30].copy(), 50)
+            self.timer -= 1
+        else:
+            self.image = tarakan_right[self.animCount // 30].copy()
+
         if cx != player_x:
             if cx < player_x:
                 for x in wall_group:
                     if x.rect.colliderect(self.rect.move(self.speed, 0)):
                         return
                 self.rect = self.rect.move(self.speed, 0)
-                self.image = tarakan_right[self.animCount // 30]
-
             elif cx > player_x:
                 for x in wall_group:
                     if x.rect.colliderect(self.rect.move(-self.speed, 0)):
                         return
                 self.rect = self.rect.move(-self.speed, 0)
-                self.image = tarakan_left[self.animCount // 30]
+                self.image = pg.transform.flip(self.image, True, False)
+
         if cy != player_y:
             if cy < player_y:
                 for x in wall_group:
@@ -184,6 +195,11 @@ class TarakanEnemy(pg.sprite.Sprite):
     def get_damage(self):
         global kills
         self.hp -= 1
+        a = time.time()
+        if not self.timer:
+            self.image = change_brightness(self.image.copy(), 50)
+            self.timer = 10
+        print(time.time() - a)
         if self.hp == 0:
             self.kill()
             kills += 1

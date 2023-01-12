@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from functools import lru_cache
 
 import pygame as pg
 
@@ -33,6 +34,21 @@ def load_level(filename: str) -> list:
         level_map = list(split_list(layers['data'], layers['width']))
     return level_map
 
+
+def change_brightness(image, extent):
+    brightness_multiplier = 1.0
+    brightness_multiplier += (extent / 100)
+    for x in range(image.get_width()):
+        for y in range(image.get_height()):
+            cord = (x, y)
+            pixel = image.get_at(cord)
+            if pixel[3] != 0:
+                new_pixel = (int(pixel[0] * brightness_multiplier),
+                             int(pixel[1] * brightness_multiplier),
+                             int(pixel[2] * brightness_multiplier),
+                             255)
+                image.set_at(cord, new_pixel)
+    return image
 
 # def load_control(filename: str) -> list:
 #     if not os.path.isfile(filename):

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "tarakans.json",
+    "activeFile": "комнаты.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -23,6 +23,22 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "level2.json": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1320,
+                "y": 1246
+            }
+        },
+        "level3.json": {
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 994,
+                "y": 1567
+            }
+        },
         "tarakans lab.tmx": {
             "scale": 1,
             "selectedLayer": 0,
@@ -39,8 +55,8 @@
             "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 506,
-                "y": 265.5
+                "x": 704,
+                "y": 684.5
             }
         },
         "tarakans.tmx": {
@@ -52,11 +68,11 @@
             }
         },
         "комнаты.tmx": {
-            "scale": 0.16897135416666664,
+            "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1917.484780765971,
-                "y": 1914.5256993141713
+                "x": 623.9999999999999,
+                "y": 334
             }
         }
     },
@@ -67,16 +83,21 @@
     "map.renderOrder": null,
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 120,
+    "map.width": 80,
     "openFiles": [
-        "tarakans.json"
+        "tarakans.json",
+        "комнаты.tmx",
+        "level2.json",
+        "level3.json"
     ],
     "project": "tarakans.tiled-project",
     "recentFiles": [
         "tarakans.json",
+        "level3.json",
+        "level2.json",
+        "комнаты.tmx",
         "lab.tsx",
         "tarakans.tmx",
-        "комнаты.tmx",
         "D:/Tarakans!/tarakans.tmx",
         "tarakans lab.tmx",
         "tarakans lab.tsx"
