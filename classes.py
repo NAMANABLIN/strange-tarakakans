@@ -233,12 +233,14 @@ class Tile(pg.sprite.Sprite):
 
 def generate_level(level):
     player, x, y = None, None, None
+    enemys = 0
     for y in range(len(level)):
         for x in range(len(level[y])):
             tile_id = level[y][x]
             if tile_id == 0:
                 continue
             elif tile_id == 12:
+                enemys += 1
                 Tile(5, x, y)
                 TarakanEnemy(tile_width * x, tile_height * y)
             elif tile_id == 15:
@@ -247,4 +249,4 @@ def generate_level(level):
             else:
                 Tile(tile_id, x, y)
 
-    return player, x, y
+    return player, enemys

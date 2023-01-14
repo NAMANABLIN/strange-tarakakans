@@ -34,6 +34,7 @@ def load_level(filename: str) -> list:
         level_map = list(split_list(layers['data'], layers['width']))
     return level_map
 
+
 @lru_cache(maxsize=20)
 def change_brightness(image, extent):
     brightness_multiplier = 1.0
@@ -49,6 +50,7 @@ def change_brightness(image, extent):
                              255)
                 image.set_at(cord, new_pixel)
     return image
+
 
 # def load_control(filename: str) -> list:
 #     if not os.path.isfile(filename):
@@ -128,3 +130,12 @@ def updates(sc, player=None):
         bullets_group.update()
         enemys_group.update(player)
         player_group.draw(sc)
+
+
+def clear():
+    tiles_group.empty()
+    wall_group.empty()
+    bullets_group.empty()
+    enemys_group.empty()
+    bullets_group.empty()
+    player_group.empty()
