@@ -1,7 +1,5 @@
 import math
-import time
 from random import randrange, randint
-
 from config import *
 
 
@@ -9,9 +7,10 @@ class Player(pg.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(player_group, all_sprites)
         self.image = gg_stand[0]
-        self.width, self.height = gg.get_size()
-        self.rect = pg.Rect(x, y, self.width, self.height)
-        self.speed = 5
+        self.rect = pg.Rect(x, y, *self.image.get_size())
+        self.speed = 4.5
+        self.button2cords = [(0, -self.speed), (0, self.speed),
+                             (-self.speed, 0), (self.speed, 0)]
 
         self.player_weapon_copy = player_weapon
 
@@ -22,22 +21,23 @@ class Player(pg.sprite.Sprite):
         self.hp = 3
         self.death = False
 
+        self.kills = 0
+
         # анимация
         self.left = False
         self.right = False
         self.animCount = 0
-        # False - пистолет, True - дробовик
-        self.weapon = False
 
     def handle_weapons(self, display):
+        weapon_x = self.rect.x + 25
+        weapon_y = self.rect.y + 25
+
         mouse_x, mouse_y = pg.mouse.get_pos()
 
-        rel_x, rel_y = mouse_x - self.rect.x + 25 - int(
-            player_weapon.get_width() / 2), mouse_y - self.rect.y + 25 - int(self.player_weapon_copy.get_height() / 2)
+        rel_x = mouse_x - weapon_x
+        rel_y = mouse_y - weapon_y
         angle = round((180 / math.pi) * -math.atan2(rel_y, rel_x))
-        # if int(angle) not in correct_radius:
-        #     self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
-        # else:
+
         if -90 <= angle <= 90:
             self.player_weapon_copy = pg.transform.rotate(player_weapon, angle)
         else:
@@ -46,8 +46,8 @@ class Player(pg.sprite.Sprite):
             self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
 
         display.blit(self.player_weapon_copy, (
-            self.rect.x + 25 - int(player_weapon.get_width() / 2),
-            self.rect.y + 25 - int(self.player_weapon_copy.get_height() / 2)))
+            weapon_x - int(player_weapon.get_width() / 2),
+            weapon_y - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
         if self.timer == 0:
@@ -69,30 +69,29 @@ class Player(pg.sprite.Sprite):
         self.handle_weapons(display)
 
     def move(self, axis):
-        if axis == 'лево':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(-self.speed, 0)):
-                    return
-            self.left = True
-            self.right = False
-            self.rect = self.rect.move(-self.speed, 0)
-        elif axis == 'право':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(self.speed, 0)):
-                    return
-            self.left = False
-            self.right = True
-            self.rect = self.rect.move(self.speed, 0)
-        if axis == 'вперёд':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(0, -self.speed)):
-                    return
-            self.rect = self.rect.move(0, -self.speed)
-        elif axis == 'назад':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(0, self.speed)):
-                    return
-            self.rect = self.rect.move(0, self.speed)
+        not_move = True
+        for i, x in enumerate(axis):
+            cords = self.button2cords[i]
+            if x:
+                cont = False
+                a = self.rect.move(cords)
+                for xx in wall_group:
+                    if xx.rect.colliderect(a):
+                        cont = True
+                        break
+                if cont:
+                    continue
+                elif i == 2:
+                    self.left, self.right = True, False
+
+                elif i == 3:
+                    self.left, self.right = False, True
+
+                self.rect = a
+                self.rect.move(cords)
+                not_move = False
+        if not_move:
+            self.left, self.right = False, False
 
     def get_damage(self):
         self.hp -= 1
@@ -104,7 +103,10 @@ class Player(pg.sprite.Sprite):
         return self.death
 
     def get_kills(self):
-        return kills
+        return self.kills
+
+    def add_kills(self, n):
+        self.kills += n
 
 
 class PlayerBullet(pg.sprite.Sprite):
@@ -112,34 +114,30 @@ class PlayerBullet(pg.sprite.Sprite):
         super().__init__(bullets_group, all_sprites)
         self.image = bullet
 
-        self.rect = pg.Rect(x, y, bullet.get_width(), bullet.get_height())
+        self.rect = pg.Rect(x, y, *bullet.get_size())
 
         self.speed = 10
         self.angle = math.atan2(y - mouse_y, x - mouse_x)
-        rnd = randint(-1, 1)
+        rnd = randint(-15, 15) / 10
         self.x_vel = math.cos(self.angle) * self.speed + rnd
         self.y_vel = math.sin(self.angle) * self.speed + rnd
-        print(self.x_vel, self.y_vel)
 
-
-    def update(self):
+    def update(self, player):
         if pg.sprite.spritecollideany(self, enemys_group):
             for enemy in enemys_group:
                 if self.rect.colliderect(enemy.rect):
                     self.kill()
-                    enemy.get_damage()
-                    return
-        self.rect = self.rect.move(-int(self.x_vel), -int(self.y_vel))
+                    if enemy.get_damage():
+                        player.add_kills(1)
+        self.rect = self.rect.move(-self.x_vel, -self.y_vel)
         if pg.sprite.spritecollideany(self, wall_group):
             self.kill()
-            return
-
 
 class TarakanEnemy(pg.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(enemys_group, all_sprites)
-        self.image = tarakan
-        self.rect = pg.Rect(x, y, tarakan.get_width(), tarakan.get_height())
+        self.image = tarakan_right[0]
+        self.rect = pg.Rect(x, y, *self.image.get_size())
         self.hp = 3
         self.reset_offset = 0
         self.speed = 1
@@ -152,7 +150,6 @@ class TarakanEnemy(pg.sprite.Sprite):
         self.animCount = 0
 
         self.timer = 0
-
 
     def update(self, player):
         player_x, player_y = player.rect.x, player.rect.y
@@ -193,17 +190,13 @@ class TarakanEnemy(pg.sprite.Sprite):
             self.animCount = 0
 
     def get_damage(self):
-        global kills
         self.hp -= 1
-        a = time.time()
         if not self.timer:
             self.image = change_brightness(self.image.copy(), 50)
             self.timer = 10
-        print(time.time() - a)
         if self.hp == 0:
             self.kill()
-            kills += 1
-
+            return True
 
 class Camera:
     def __init__(self, size):
@@ -225,7 +218,7 @@ class Tile(pg.sprite.Sprite):
         super().__init__(tiles_group, all_sprites)
         if tile_id != 5:
             self.add(wall_group)
-        self.image = tiles[tile_id-1]
+        self.image = tiles[tile_id - 1]
         self.x, self.y = pos_x, pos_y
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
