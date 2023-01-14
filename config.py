@@ -107,7 +107,7 @@ tiles = [load_image(f'tile_0{i}.png') for i in range(1, 11)]
 tile_width = tile_height = 32
 pg.init()
 font = pg.font.SysFont("Comic Sans MS", 30)
-font_color = BLACK
+font_color = (192, 165, 97)
 
 all_sprites = pg.sprite.Group()
 enemys_group = pg.sprite.Group()
