@@ -1,6 +1,35 @@
 import math
-from random import randrange, randint
+from random import randint, choice
+from time import time
+
 from config import *
+from defs import change_brightness
+
+
+class Particle(pg.sprite.Sprite):
+    def __init__(self, pos, dx, dy):
+        super().__init__(particles_group, all_sprites)
+        self.image = choice(bulls)
+        self.rect = self.image.get_rect()
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = GRAVITY
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(SCREEN_RECT):
+            self.kill()
 
 
 class Player(pg.sprite.Sprite):
@@ -28,6 +57,9 @@ class Player(pg.sprite.Sprite):
         self.right = False
         self.animCount = 0
 
+        self.death_time = 0
+
+
     def handle_weapons(self, display):
         weapon_x = self.rect.x + 25
         weapon_y = self.rect.y + 25
@@ -51,7 +83,7 @@ class Player(pg.sprite.Sprite):
 
     def main(self, display):
         if self.timer == 0:
-            if pg.sprite.spritecollideany(self, enemys_group):
+            if pg.sprite.spritecollideany(self, enemies_group):
                 self.get_damage()
         else:
             self.timer -= 1
@@ -68,27 +100,25 @@ class Player(pg.sprite.Sprite):
             self.animCount = 0
         self.handle_weapons(display)
 
-    def move(self, axis):
+    def move(self, keys, axis):
         not_move = True
         for i, x in enumerate(axis):
             cords = self.button2cords[i]
-            if x:
+            if keys[x]:
                 cont = False
                 a = self.rect.move(cords)
+                if i == 2:
+                    self.left, self.right = True, False
+                elif i == 3:
+                    self.left, self.right = False, True
                 for xx in wall_group:
                     if xx.rect.colliderect(a):
                         cont = True
                         break
                 if cont:
                     continue
-                elif i == 2:
-                    self.left, self.right = True, False
-
-                elif i == 3:
-                    self.left, self.right = False, True
 
                 self.rect = a
-                self.rect.move(cords)
                 not_move = False
         if not_move:
             self.left, self.right = False, False
@@ -98,15 +128,23 @@ class Player(pg.sprite.Sprite):
         self.timer = 60
         if self.hp == 0:
             self.death = True
+            self.death_time = round(time())
 
     def status(self):
         return self.death
 
+    def live_time(self, start_time):
+        return self.death_time - start_time
+
     def get_kills(self):
         return self.kills
 
-    def add_kills(self, n):
-        self.kills += n
+    def add_kills(self, kills):
+        self.kills += kills
+
+    def change_hp(self, hp):
+        self.hp = hp
+
 
 
 class PlayerBullet(pg.sprite.Sprite):
@@ -123,26 +161,31 @@ class PlayerBullet(pg.sprite.Sprite):
         self.y_vel = math.sin(self.angle) * self.speed + rnd
 
     def update(self, player):
-        if pg.sprite.spritecollideany(self, enemys_group):
-            for enemy in enemys_group:
+        if pg.sprite.spritecollideany(self, enemies_group):
+            for enemy in enemies_group:
                 if self.rect.colliderect(enemy.rect):
                     self.kill()
+                    create_particles((self.rect.x, self.rect.y))
                     if enemy.get_damage():
                         player.add_kills(1)
-        self.rect = self.rect.move(-self.x_vel, -self.y_vel)
+                    return
         if pg.sprite.spritecollideany(self, wall_group):
             self.kill()
+            create_particles((self.rect.x, self.rect.y))
+            return
+        self.rect = self.rect.move(-self.x_vel, -self.y_vel)
 
-class TarakanEnemy(pg.sprite.Sprite):
+
+class CockroachEnemy(pg.sprite.Sprite):
     def __init__(self, x, y):
-        super().__init__(enemys_group, all_sprites)
+        super().__init__(enemies_group, all_sprites)
         self.image = tarakan_right[0]
         self.rect = pg.Rect(x, y, *self.image.get_size())
         self.hp = 3
-        self.reset_offset = 0
-        self.speed = 1
-        self.offset_x = randrange(-150, 150)
-        self.offset_y = randrange(-150, 150)
+        self.speed = 1.2
+
+        self.nx, self.ny = 32 * 10, 32 * 18
+        self.nw, self.nh = 32 * 20, 32 * 36
 
         # анимация
         self.left = False
@@ -152,40 +195,54 @@ class TarakanEnemy(pg.sprite.Sprite):
         self.timer = 0
 
     def update(self, player):
-        player_x, player_y = player.rect.x, player.rect.y
+        rct = player.rect
         cx, cy = self.rect.x, self.rect.y
-        if self.timer:
-            self.image = change_brightness(tarakan_right[self.animCount // 30].copy(), 50)
-            self.timer -= 1
+        en_rect = pg.Rect(cx - self.nx, cy - self.ny,
+                          self.nw, self.nh)
+        move = False
+        reverse = False
+        if en_rect.colliderect(rct):
+            player_x, player_y = rct.x, rct.y
+
+            if cx != player_x:
+                if cx < player_x:
+                    new_rect = self.rect.move(self.speed, 0)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+
+                else:
+                    new_rect = self.rect.move(-self.speed, 0)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+                        reverse = True
+            if cy != player_y:
+                if cy < player_y:
+                    new_rect = self.rect.move(0, self.speed)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+
+                else:
+                    new_rect = self.rect.move(0, -self.speed)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+
+        if move:
+            if self.timer:
+                self.image = change_brightness(tarakan_right[self.animCount // 30].copy(), 50)
+                self.timer -= 1
+            else:
+                self.image = tarakan_right[self.animCount // 30].copy()
         else:
-            self.image = tarakan_right[self.animCount // 30].copy()
+            self.image = tarakan_stand[round(self.animCount / 60)]
 
-        if cx != player_x:
-            if cx < player_x:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(self.speed, 0)):
-                        return
-                self.rect = self.rect.move(self.speed, 0)
-            elif cx > player_x:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(-self.speed, 0)):
-                        return
-                self.rect = self.rect.move(-self.speed, 0)
-                self.image = pg.transform.flip(self.image, True, False)
+        if reverse:
+            self.image = pg.transform.flip(self.image, True, False)
 
-        if cy != player_y:
-            if cy < player_y:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(0, self.speed)):
-                        return
-                self.rect = self.rect.move(0, self.speed)
-            elif cy > player_y:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(0, -self.speed)):
-                        return
-                self.rect = self.rect.move(0, -self.speed)
         self.animCount += 1
-
         if self.animCount == 60:
             self.animCount = 0
 
@@ -197,6 +254,7 @@ class TarakanEnemy(pg.sprite.Sprite):
         if self.hp == 0:
             self.kill()
             return True
+
 
 class Camera:
     def __init__(self, size):
@@ -226,20 +284,29 @@ class Tile(pg.sprite.Sprite):
 
 def generate_level(level):
     player, x, y = None, None, None
-    enemys = 0
+    enemies = 0
     for y in range(len(level)):
         for x in range(len(level[y])):
             tile_id = level[y][x]
             if tile_id == 0:
                 continue
             elif tile_id == 12:
-                enemys += 1
+                enemies += 1
                 Tile(5, x, y)
-                TarakanEnemy(tile_width * x, tile_height * y)
+                CockroachEnemy(tile_width * x, tile_height * y)
             elif tile_id == 15:
                 Tile(5, x, y)
                 player = Player(tile_width * x, tile_height * y)
             else:
                 Tile(tile_id, x, y)
 
-    return player, enemys
+    return player, enemies
+
+
+def create_particles(position):
+    # количество создаваемых частиц
+    particle_count = 5
+    # возможные скорости
+    numbers = range(-5, 6)
+    for _ in range(particle_count):
+        Particle(position, choice(numbers), choice(numbers))
