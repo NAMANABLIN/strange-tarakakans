@@ -63,6 +63,15 @@ bullets_group = pg.sprite.Group()
 wall_group = pg.sprite.Group()
 tiles_group = pg.sprite.Group()
 particles_group = pg.sprite.Group()
+mixer = pg.mixer
+mixer.init()
+sound_path = 'resources/audio/sound/'
+sounds = {'win': mixer.Sound(sound_path + 'victory_sJDDywi.wav'),
+          'click': mixer.Sound(sound_path + 'sqek.wav'),
+          'hit': mixer.Sound(sound_path + 'inecraft_hit_sound--online-audio-convert.com.wav'),
+          'death': mixer.Sound(sound_path + 'inecraft_death--online-audio-convert.com.wav'),
+          'save': mixer.Sound(sound_path + 'undertale-save.wav')}
+mixer.music.load('resources/audio/music/Toby-Fox-Amalgam.wav')
 
 
 def updates(sc, player=None):

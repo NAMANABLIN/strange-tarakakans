@@ -59,6 +59,8 @@ class Player(pg.sprite.Sprite):
 
         self.death_time = 0
 
+        self.winner = False
+
     def handle_weapons(self, display):
         weapon_x = self.rect.x + 25
         weapon_y = self.rect.y + 25
@@ -81,11 +83,9 @@ class Player(pg.sprite.Sprite):
             weapon_y - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
-        if self.timer == 0:
-            if pg.sprite.spritecollideany(self, enemies_group):
-                self.get_damage()
-        else:
-            self.timer -= 1
+        if pg.sprite.spritecollideany(self, enemies_group):
+            self.get_damage()
+            sounds['death'].play()
 
         if self.left:
             self.image = gg_left[self.animCount // 30]
@@ -122,12 +122,16 @@ class Player(pg.sprite.Sprite):
         if not_move:
             self.left, self.right = False, False
 
-    def get_damage(self):
+    def get_damage(self, sound=True):
         self.hp -= 1
-        self.timer = 60
         if self.hp == 0:
             self.death = True
             self.death_time = round(time())
+            if sound:
+                sounds['death'].play()
+            else:
+                sounds['win'].play()
+                self.winner = True
 
     def status(self):
         return self.death
@@ -166,6 +170,9 @@ class PlayerBullet(pg.sprite.Sprite):
                     create_particles((self.rect.x, self.rect.y))
                     if enemy.get_damage():
                         player.add_kills(1)
+                        sounds['death'].play()
+
+                    sounds['hit'].play()
                     return
         if pg.sprite.spritecollideany(self, wall_group):
             self.kill()
@@ -180,7 +187,7 @@ class CockroachEnemy(pg.sprite.Sprite):
         self.image = tarakan_right[0]
         self.rect = pg.Rect(x, y, *self.image.get_size())
         self.hp = 5
-        self.speed = 1.9
+        self.speed = 2
 
         self.nx, self.ny = 32 * 11, 32 * 19
         self.nw, self.nh = 32 * 22, 32 * 38
