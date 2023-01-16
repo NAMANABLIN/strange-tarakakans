@@ -37,7 +37,7 @@ class Player(pg.sprite.Sprite):
         super().__init__(player_group, all_sprites)
         self.image = gg_stand[0]
         self.rect = pg.Rect(x, y, *self.image.get_size())
-        self.speed = 4.5
+        self.speed = 4.2
         self.button2cords = [(0, -self.speed), (0, self.speed),
                              (-self.speed, 0), (self.speed, 0)]
 
@@ -47,7 +47,7 @@ class Player(pg.sprite.Sprite):
         # пока таймер не равен 0 - игрок не уязвим
         self.timer = 0
 
-        self.hp = 3
+        self.hp = 1
         self.death = False
 
         self.kills = 0
@@ -58,7 +58,6 @@ class Player(pg.sprite.Sprite):
         self.animCount = 0
 
         self.death_time = 0
-
 
     def handle_weapons(self, display):
         weapon_x = self.rect.x + 25
@@ -146,7 +145,6 @@ class Player(pg.sprite.Sprite):
         self.hp = hp
 
 
-
 class PlayerBullet(pg.sprite.Sprite):
     def __init__(self, x, y, mouse_x, mouse_y):
         super().__init__(bullets_group, all_sprites)
@@ -181,11 +179,11 @@ class CockroachEnemy(pg.sprite.Sprite):
         super().__init__(enemies_group, all_sprites)
         self.image = tarakan_right[0]
         self.rect = pg.Rect(x, y, *self.image.get_size())
-        self.hp = 3
-        self.speed = 1.2
+        self.hp = 5
+        self.speed = 1.9
 
-        self.nx, self.ny = 32 * 10, 32 * 18
-        self.nw, self.nh = 32 * 20, 32 * 36
+        self.nx, self.ny = 32 * 11, 32 * 19
+        self.nw, self.nh = 32 * 22, 32 * 38
 
         # анимация
         self.left = False
@@ -231,16 +229,16 @@ class CockroachEnemy(pg.sprite.Sprite):
                         move = True
 
         if move:
-            if self.timer:
-                self.image = change_brightness(tarakan_right[self.animCount // 30].copy(), 50)
-                self.timer -= 1
-            else:
-                self.image = tarakan_right[self.animCount // 30].copy()
+            self.image = tarakan_right[self.animCount // 30].copy()
+            if reverse:
+                self.image = pg.transform.flip(self.image, True, False)
         else:
             self.image = tarakan_stand[round(self.animCount / 60)]
 
-        if reverse:
-            self.image = pg.transform.flip(self.image, True, False)
+
+        if self.timer:
+            self.image = change_brightness(self.image.copy(), 50)
+            self.timer -= 1
 
         self.animCount += 1
         if self.animCount == 60:

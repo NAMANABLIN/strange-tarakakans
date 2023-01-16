@@ -11,14 +11,14 @@ pg.display.set_icon(logo)
 clock = pg.time.Clock()
 
 camera = Camera(SIZE)
-keys_list = [keys_list[control_list[i]] for i in range(4)]
-click_btn = control_list[4]
 
 
 def game():
     enemies = 0
     kills = 0
     start_time = round(time())
+    keys_list = [letter2konst[control_list[i]] for i in range(4)]
+    click_btn = control_list[4]
     for i in range(1, 4):
         player, new_enemies = generate_level(load_level(f'level{i}.json'))
         player.add_kills(kills)
@@ -30,21 +30,28 @@ def game():
         while running:
             sc.fill(BLACK)
             if player.status():
+                buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50)]
+                txt_coord = [(W // 2 - 190 // 2 + 45, H - 100, 190, 50)]
+                txts = ['Выйти']
                 for event in pg.event.get():
                     if event.type == pg.QUIT:
                         pg.quit()
                         sys.exit()
                     elif event.type == pg.MOUSEBUTTONDOWN:
                         if event.button == 1:
-                            pass
+                            x = event.pos[0]
+                            y = event.pos[1]
+                            bt = buttons_coord[0]
+                            if bt[0] <= x <= bt[0] + bt[2] and \
+                                    bt[1] <= y <= bt[1] + bt[3]:
+                                exit()
 
                 updates(sc)
                 sc.blit(game_over_image, (0, 0))
                 sc.blit(font.render(f"Убито тараканов: {player.get_kills()}", 2, WHITE), (60, 60))
                 sc.blit(font.render(f"Потрачено время: {player.live_time(start_time)}", 2, WHITE), (60, 120))
 
-                buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50)]
-                button(buttons_coord, sc)
+                button(buttons_coord, txt_coord, txts, sc)
 
             else:
                 for event in pg.event.get():
@@ -56,13 +63,15 @@ def game():
                             if not count_reload:
                                 PlayerBullet(player.rect.x + 15, player.rect.y + 15,
                                              *event.pos)
-                                count_reload = 10
+                                count_reload = 1
 
                 keys = pg.key.get_pressed()
 
                 player.move(keys, keys_list)
                 if keys[pg.K_ESCAPE]:
                     main_menu(False)
+                    keys_list = [letter2konst[control_list[i]] for i in range(4)]
+                    click_btn = control_list[4]
 
                 camera.update(player)
                 for sprite in all_sprites:
@@ -89,11 +98,6 @@ def game():
                             clear()
 
                 player.main(sc)
-                # отображение hp игрока
-                x_hp_sqr = 10
-                for x in range(player.hp):
-                    pg.draw.rect(sc, RED, (x_hp_sqr, 10, 30, 30))
-                    x_hp_sqr += 35
 
                 if count_reload:
                     count_reload -= 1

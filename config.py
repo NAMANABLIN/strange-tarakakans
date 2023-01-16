@@ -14,7 +14,7 @@ WHITE = (255, 255, 255)
 GREY = (100, 100, 100)
 RED = (255, 0, 0)
 
-keys_list = {
+letter2konst = {
     'Q': pg.K_q, 'W': pg.K_w, 'E': pg.K_e, 'R': pg.K_r,
     'T': pg.K_t, 'Y': pg.K_y, 'U': pg.K_u, 'I': pg.K_i,
     'O': pg.K_o, 'P': pg.K_p, 'A': pg.K_a, 'S': pg.K_s,
@@ -53,7 +53,7 @@ tile_width = tile_height = 32
 pg.init()
 font = pg.font.SysFont("Comic Sans MS", 30)
 font_color = (203, 181, 128)
-font_color2 = (126,201,198)
+font_color2 = (126, 201, 198)
 button_color = (28, 28, 28)
 
 all_sprites = pg.sprite.Group()
@@ -72,8 +72,8 @@ def updates(sc, player=None):
     enemies_group.draw(sc)
     particles_group.draw(sc)
     if player is not None:
-        bullets_group.update(player)
         enemies_group.update(player)
+        bullets_group.update(player)
         particles_group.update()
         player_group.draw(sc)
 

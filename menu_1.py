@@ -10,21 +10,14 @@ def menu(screen):
     pg.display.set_icon(logo)
     screen.blit(fon, (0, 0))
     pg.display.flip()
+
     buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50), (W // 2 - 190 // 2, H - 160, 190, 50),
-                     (W // 2 - 190 // 2, H - 220, 190, 50), (W // 2 - 190 // 2, H - 280, 190, 50)]
-    button(buttons_coord, screen)
+                     (W // 2 - 190 // 2, H - 220, 190, 50)]
+    txt_coord = [(W // 2 - 190 // 2 + 45, H - 100, 190, 50), (W // 2 - 190 // 2 + 20, H - 160, 180, 50),
+                 (W // 2 - 190 // 2 + 50, H - 220, 180, 50)]
+    txts = ["Выйти", "Настройки", "Играть"]
 
-    text = font.render("Продолжить", 1, font_color)
-    screen.blit(text, (W // 2 - 190 // 2, H - 280, 180, 50))
-
-    text = font.render("Новая игра", 1, font_color)
-    screen.blit(text, (W // 2 - 190 // 2 + 17, H - 220, 180, 50))
-
-    text = font.render("Настройки", 1, font_color)
-    screen.blit(text, (W // 2 - 190 // 2 + 20, H - 160, 180, 50))
-
-    text = font.render("Выйти", 1, font_color)
-    screen.blit(text, (W // 2 - 190 // 2 + 45, buttons_coord[0][1]))
+    button(buttons_coord, txt_coord, txts, screen)
 
     pg.display.flip()
     screen_value = 'menu'
@@ -36,39 +29,28 @@ def new_game():
     return screen_value
 
 
-def continue_game():
-    screen_value = 'continue'
-    return screen_value
-
-
 def control():
     global control_list
     screen = pg.display.set_mode(SIZE)
     pg.display.set_caption('Управление')
     screen.blit(fon, (0, 0))
-    screen.blit(font.render("Вперёд" + (18 - 6 - len(control_list[0])) * ' ' + control_list[0], 1, font_color),
-                (W // 30 + 10, H - 400, 180, 50))
-    screen.blit(font.render("Назад" + (19 - 5 - len(control_list[1])) * ' ' + control_list[1], 1, font_color),
-                (W // 30 + 10, H - 365, 180, 50))
-    screen.blit(font.render("Влево" + (19 - 5 - len(control_list[2])) * ' ' + control_list[2], 1, font_color),
-                (W // 30 + 10, H - 335, 180, 50))
-    screen.blit(font.render("Вправо" + (18 - 6 - len(control_list[3])) * ' ' + control_list[3], 1, font_color),
-                (W // 30 + 10, H - 305, 180, 50))
-    screen.blit(font.render("Стрельба" + (18 - 8 - len(control_list[4])) * ' ' + control_list[4], 1, font_color),
-                (W // 30 + 10, H - 275, 180, 50))
 
-    # Кнопки
-    pg.draw.rect(screen, button_color, (W // 2 - 95, H - 100, 190, 50), 0)
-    text = font.render("Назад", 1, font_color)
-    screen.blit(text, (W // 2 - 95 + 50, H - 100))
+    txt_coord = [(W // 30 + 10, H - 400, 180, 50), (W // 30 + 10, H - 365, 180, 50),
+                 (W // 30 + 10, H - 335, 180, 50), (W // 30 + 10, H - 305, 180, 50),
+                 (W // 30 + 10, H - 275, 180, 50)]
+    txts = ["Вперёд", "Назад", "Влево", "Вправо", "Стрельба"]
+    lol = [12, 14, 14, 12, 10]
+    for i in range(5):
+        screen.blit(font.render(txts[i] + (lol[i] - len(control_list[i])) * ' ' + control_list[i],
+                                1, font_color), txt_coord[i])
 
-    pg.draw.rect(screen, button_color, (W // 30, H - 220, 180, 50), 0)
-    text = font.render("Сохранить", 1, font_color)
-    screen.blit(text, (W // 30 + 15, H - 220, 180, 50))
+    buttons_coord = [(W // 2 - 95, H - 100, 190, 50), (W // 30, H - 220, 180, 50),
+                     (W // 30, H - 160, 180, 50)]
+    txt_coord = [(W // 2 - 95 + 50, H - 100), (W // 30 + 15, H - 220, 180, 50),
+                 (W // 30 + 50, H - 160, 180, 50)]
+    txts = ["Назад", "Сохранить", "Сброс"]
 
-    pg.draw.rect(screen, button_color, (W // 30, H - 160, 180, 50), 0)
-    text = font.render("Сброс", 1, font_color)
-    screen.blit(text, (W // 30 + 50, H - 160, 180, 50))
+    button(buttons_coord, txt_coord, txts, screen)
 
     screen_value = 'control'
     return screen_value
@@ -81,23 +63,19 @@ def options(s, m, main_or_esc):
     screen_value = 'options'
 
     # Кнопки
-    buttons_coord = [(W // 30, H - 250, 190, 50), (W // 30, H - 190, 190, 50), (W - 530, H - 250, 190, 50)]
-    button(buttons_coord, screen)
+    buttons_coord = [(W // 30, H - 250, 190, 50), (W // 30, H - 190, 190, 50),
+                     (W - 530, H - 250, 190, 50)]
+    txt_coord = [(W // 30 + 10, H - 250, 180, 50), (W // 30 + 55, H - 190, 180, 50),
+                 (W - 530 + 20, H - 250, 180, 50)]
+    txts = ["Управление", "Назад", "Сохранить"]
 
-    text = font.render("Звук", 1, font_color)
-    screen.blit(text, (W // 30 + 60, H - 380, 180, 50))
+    button(buttons_coord, txt_coord, txts, screen)
 
-    text = font.render("Музыка", 1, font_color)
-    screen.blit(text, (W // 30 + 40, H - 320, 180, 50))
-
-    text = font.render("Управление", 1, font_color)
-    screen.blit(text, (W // 30 + 10, H - 250, 180, 50))
-
-    text = font.render("Назад", 1, font_color)
-    screen.blit(text, (W // 30 + 55, H - 190, 180, 50))
-
-    text = font.render("Сохранить", 1, font_color)
-    screen.blit(text, (W - 530 + 20, H - 250, 180, 50))
+    txt_coord = [(W // 30 + 60, H - 380, 180, 50), (W // 30 + 40, H - 320, 180, 50)]
+    txts = ["Звук", "Музыка"]
+    for i in range(2):
+        text = font.render(txts[i], 1, font_color)
+        screen.blit(text, txt_coord[i])
 
     # Слайдеры
     pg.draw.line(screen, (52, 52, 52), (W - 550, H - 355), (W - 300, H - 355), width=5)
@@ -109,18 +87,19 @@ def options(s, m, main_or_esc):
     volume = [round((s - 250) / 245, 2), round((m - 250) / 245, 2)]
 
     if not main_or_esc:
-        pg.draw.rect(screen, button_color, (W // 2 - 115, H - 100, 220, 50), 0)
-        text = font.render("Выйти в меню", 1, font_color)
-        screen.blit(text, (W // 2 - 110, H - 100))
+        button([(W // 2 - 115, H - 100, 220, 50)],
+               [(W // 2 - 110, H - 100)], ["Выйти в меню"], screen)
 
     pg.display.flip()
 
     return buttons_coord, screen_value, sounds, sound, music, volume
 
 
-def button(buttons_coord, screen):  # отрисовка кнопок
-    for x in buttons_coord:
-        pg.draw.rect(screen, button_color, x, 0)
+def button(buttons_coord, txt_coord, txts, screen):  # отрисовка кнопок
+    for i in range(len(buttons_coord)):
+        pg.draw.rect(screen, button_color, buttons_coord[i], 0)
+        text = font.render(txts[i], 1, font_color)
+        screen.blit(text, txt_coord[i])
 
 
 def exit_game():
@@ -168,8 +147,7 @@ def main_menu(main_or_esc=True):
                                 buttons, screen_value, sounds, sound, music, volume = options(s, m, main_or_esc)
                             elif buttons.index(i) == 2:  # new game
                                 screen_value = new_game()
-                            elif buttons.index(i) == 3:  # continue
-                                screen_value = continue_game()
+
                 if screen_value == 'options':
                     if sounds[0][0] <= x <= sounds[0][0] + sounds[0][2] and sounds[0][1] <= y <= sounds[0][1] + \
                             sounds[0][3]:  # sound
@@ -210,6 +188,7 @@ def main_menu(main_or_esc=True):
                     if W // 2 - 115 <= x <= W // 2 + 105 and H - 100 <= y <= H - 50:
                         main_menu()
                         running = False
+
                 elif screen_value == 'control':
                     if W // 2 - 95 <= x <= W // 2 - 95 + 190 and H - 100 <= y <= H - 100 + 50:  # back
                         control_list = [forward, back, left, right, shooting]
@@ -239,16 +218,20 @@ def main_menu(main_or_esc=True):
                                 control_list[key] = 'ПКМ'
                                 key = ''
                             control()
+
                 elif screen_value == 'newgame':
                     return
+
                 elif screen_value == 'continue':
                     return
+
                 elif screen_value == 'exit':
                     if W - 550 <= x <= W - 400 and H - 240 <= y <= H - 190:
-                        running = False
+                        exit()
                     elif W - 380 <= x <= W - 230 and H - 240 <= y <= H - 190:
                         screen_value = 'menu'
                         main_menu()
+
             if event.type == pg.KEYDOWN:
                 if event.key in range(97, 123):
                     if screen_value == 'control':
