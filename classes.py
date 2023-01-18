@@ -38,17 +38,16 @@ class Player(pg.sprite.Sprite):
         self.image = gg_stand[0]
         self.rect = pg.Rect(x, y, *self.image.get_size())
         self.speed = 4.2
+        # содержит кортежи по которым следует передвигаться при нажатии кнопок управления
         self.button2cords = [(0, -self.speed), (0, self.speed),
                              (-self.speed, 0), (self.speed, 0)]
 
         self.player_weapon_copy = player_weapon
 
-        # таймер нужен чтобы после получения урона игрок не сразу же получи ещё,
-        # пока таймер не равен 0 - игрок не уязвим
-        self.timer = 0
-
         self.hp = 1
         self.death = False
+        self.death_time = 0
+        self.winner = False
 
         self.kills = 0
 
@@ -56,10 +55,7 @@ class Player(pg.sprite.Sprite):
         self.left = False
         self.right = False
         self.animCount = 0
-
-        self.death_time = 0
-
-        self.winner = False
+        self.move_xy = False
 
     def handle_weapons(self, display):
         weapon_x = self.rect.x + 25
@@ -71,9 +67,10 @@ class Player(pg.sprite.Sprite):
         rel_y = mouse_y - weapon_y
         angle = round((180 / math.pi) * -math.atan2(rel_y, rel_x))
 
-        if -90 <= angle <= 90:
+        if -90 <= angle <= 90:  # если курсор в правой части экрана
             self.player_weapon_copy = pg.transform.rotate(player_weapon, angle)
         else:
+            # переворачивает спрайт игрока по оси x если не передвигается в право или влево
             if not self.left and not self.right:
                 self.image = pg.transform.flip(self.image, True, False)
             self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
@@ -83,14 +80,16 @@ class Player(pg.sprite.Sprite):
             weapon_y - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
-        if pg.sprite.spritecollideany(self, enemies_group):
+        if pg.sprite.spritecollideany(self, enemies_group):  # проверка соприкосается ли игрок к врагу
             self.get_damage()
             sounds['death'].play()
 
-        if self.left:
-            self.image = gg_left[self.animCount // 30]
-        elif self.right:
-            self.image = gg_right[self.animCount // 30]
+        # анимация
+        if self.move_xy:
+            if self.left:
+                self.image = gg_left[self.animCount // 30]
+            else:
+                self.image = gg_right[self.animCount // 30]
         else:
             self.image = gg_stand[round(self.animCount / 60)]
         self.animCount += 1
@@ -102,25 +101,25 @@ class Player(pg.sprite.Sprite):
     def move(self, keys, axis):
         not_move = True
         for i, x in enumerate(axis):
-            cords = self.button2cords[i]
+            cords = self.button2cords[i]  # проверка нажатий на клавиши передвежения
             if keys[x]:
-                cont = False
+                move = True
                 a = self.rect.move(cords)
                 if i == 2:
                     self.left, self.right = True, False
                 elif i == 3:
                     self.left, self.right = False, True
                 for xx in wall_group:
-                    if xx.rect.colliderect(a):
-                        cont = True
+                    if xx.rect.colliderect(a):  # проверка соприкосается ли игрок к стене
+                        move = False
                         break
-                if cont:
-                    continue
-
-                self.rect = a
-                not_move = False
+                if move:
+                    self.rect = a
+                    not_move = False
+                    self.move_xy = True
         if not_move:
             self.left, self.right = False, False
+            self.move_xy = False
 
     def get_damage(self, sound=True):
         self.hp -= 1
@@ -136,7 +135,7 @@ class Player(pg.sprite.Sprite):
     def status(self):
         return self.death
 
-    def live_time(self, start_time):
+    def live_time(self, start_time):  # для конечного окна
         return self.death_time - start_time
 
     def get_kills(self):
@@ -189,6 +188,7 @@ class CockroachEnemy(pg.sprite.Sprite):
         self.hp = 5
         self.speed = 2
 
+        # радиус проверки на игрока
         self.nx, self.ny = 32 * 11, 32 * 19
         self.nw, self.nh = 32 * 22, 32 * 38
 
@@ -197,6 +197,8 @@ class CockroachEnemy(pg.sprite.Sprite):
         self.right = False
         self.animCount = 0
 
+        # нужен для осветления противника, если =0 - нет эффекта
+        # эффект появляется на 10 кадров
         self.timer = 0
 
     def update(self, player):
@@ -221,7 +223,8 @@ class CockroachEnemy(pg.sprite.Sprite):
                     if check_walls(new_rect):
                         self.rect = new_rect
                         move = True
-                        reverse = True
+                    reverse = True
+
             if cy != player_y:
                 if cy < player_y:
                     new_rect = self.rect.move(0, self.speed)
@@ -237,11 +240,10 @@ class CockroachEnemy(pg.sprite.Sprite):
 
         if move:
             self.image = tarakan_right[self.animCount // 30].copy()
-            if reverse:
-                self.image = pg.transform.flip(self.image, True, False)
         else:
             self.image = tarakan_stand[round(self.animCount / 60)]
-
+        if reverse:
+            self.image = pg.transform.flip(self.image, True, False)
 
         if self.timer:
             self.image = change_brightness(self.image.copy(), 50)

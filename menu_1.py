@@ -1,6 +1,8 @@
-from config import pg, logo, fon, \
-    font, font_color, button_color, SIZE, W, H
+from time import sleep
 
+from config import pg, logo, fon, \
+    font, font_color, button_color, SIZE, W, H, sounds, change_volume
+import sys
 forward, back, left, right, shooting = open('control', encoding='UTF-8').read().strip().split()
 control_list = [forward, back, left, right, shooting]
 
@@ -83,8 +85,8 @@ def options(s, m, main_or_esc):
     sound = pg.draw.rect(screen, (45, 44, 41), (s, H - 370, 10, 30))
     music = pg.draw.rect(screen, (45, 44, 41), (m, H - 310, 10, 30))
 
-    sounds = [(sound.x, sound.y, 10, 30), (music.x, music.y, 10, 30)]
-    volume = [round((s - 250) / 245, 2), round((m - 250) / 245, 2)]
+    volumes_cords = [(sound.x, sound.y, 10, 30), (music.x, music.y, 10, 30)]
+    volumes = [round((s - 250) / 245, 2), round((m - 250) / 245, 2)]
 
     if not main_or_esc:
         button([(W // 2 - 115, H - 100, 220, 50)],
@@ -92,7 +94,7 @@ def options(s, m, main_or_esc):
 
     pg.display.flip()
 
-    return buttons_coord, screen_value, sounds, sound, music, volume
+    return buttons_coord, screen_value, volumes_cords, sound, music, volumes
 
 
 def button(buttons_coord, txt_coord, txts, screen):  # отрисовка кнопок
@@ -118,7 +120,6 @@ def exit_game():
 def main_menu(main_or_esc=True):
     global forward, back, left, right, shooting, control_list
     key = ''  # индекс изменяемой кнопки управления в списке control_list
-    pg.init()
     screen = pg.display.set_mode(SIZE)
 
     running = True
@@ -128,11 +129,12 @@ def main_menu(main_or_esc=True):
     if main_or_esc:
         buttons, screen_value = menu(screen)
     else:
-        buttons, screen_value, sounds, sound, music, volume = options(s, m, main_or_esc)
+        buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                exit()
+                pg.quit()
+                sys.exit()
             if event.type == pg.MOUSEBUTTONDOWN:
                 x = event.pos[0]
                 y = event.pos[1]
@@ -144,13 +146,14 @@ def main_menu(main_or_esc=True):
                             elif buttons.index(i) == 1:  # options
                                 s = int(open('sound').read().strip().split()[1])
                                 m = int(open('sound').read().strip().split()[3])
-                                buttons, screen_value, sounds, sound, music, volume = options(s, m, main_or_esc)
+                                buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
                             elif buttons.index(i) == 2:  # new game
                                 screen_value = new_game()
+                            sounds['click'].play()
 
                 if screen_value == 'options':
-                    if sounds[0][0] <= x <= sounds[0][0] + sounds[0][2] and sounds[0][1] <= y <= sounds[0][1] + \
-                            sounds[0][3]:  # sound
+                    if volumes_cords[0][0] <= x <= volumes_cords[0][0] + volumes_cords[0][2] and \
+                            volumes_cords[0][1] <= y <= volumes_cords[0][1] + volumes_cords[0][3]:  # sound
                         while pg.mouse.get_pressed()[0]:
                             if W - 550 <= pg.mouse.get_pos()[0]:
                                 if pg.mouse.get_pos()[0] <= W - 305:
@@ -159,9 +162,10 @@ def main_menu(main_or_esc=True):
                                     s = W - 305
                             else:
                                 s = W - 550
-                            buttons, screen_value, sounds, sound, music, volume = options(s, m, main_or_esc)
-                    if sounds[1][0] <= x <= sounds[1][0] + sounds[1][2] and sounds[1][1] <= y <= sounds[1][1] + \
-                            sounds[1][3]:  # music
+                            buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
+                    if volumes_cords[1][0] <= x <= volumes_cords[1][0] + volumes_cords[1][2] and volumes_cords[1][
+                        1] <= y <= volumes_cords[1][1] + \
+                            volumes_cords[1][3]:  # music
                         while pg.mouse.get_pressed()[0]:
                             if W - 550 <= pg.mouse.get_pos()[0]:
                                 if pg.mouse.get_pos()[0] <= W - 305:
@@ -170,7 +174,7 @@ def main_menu(main_or_esc=True):
                                     m = W - 305
                             else:
                                 m = W - 550
-                            buttons, screen_value, sounds, sound, music, volume = options(s, m, main_or_esc)
+                            buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
                     for i in buttons:
                         if i[0] <= x <= i[0] + i[2] and i[1] <= y <= i[1] + i[3]:
                             if buttons.index(i) == 1:  # back
@@ -178,14 +182,21 @@ def main_menu(main_or_esc=True):
                                     buttons, screen_value = menu(screen)
                                 else:
                                     running = False
+                                sounds['click'].play()
+
                             elif buttons.index(i) == 0:  # control
                                 screen_value = control()
-                                print(1)
+                                sounds['click'].play()
                                 break
                             elif buttons.index(i) == 2:  # save
+                                change_volume(volumes)
+                                sounds['save'].play()
                                 open('sound', 'w').write(
-                                    str(volume[0]) + ' ' + str(s) + '\n' + str(volume[1]) + ' ' + str(m))
+                                    str(volumes[0]) + ' ' + str(s) + '\n' + str(volumes[1]) + ' ' + str(m))
+
                     if W // 2 - 115 <= x <= W // 2 + 105 and H - 100 <= y <= H - 50:
+                        sounds['click'].play()
+
                         main_menu()
                         running = False
 
@@ -194,15 +205,18 @@ def main_menu(main_or_esc=True):
                         control_list = [forward, back, left, right, shooting]
                         s = int(open('sound').read().strip().split()[1])
                         m = int(open('sound').read().strip().split()[3])
-                        buttons, screen_value, sounds, sound, music, volume = options(s, m, main_or_esc)
+                        buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
+                        sounds['click'].play()
                     else:
                         if key == '' and W // 30 <= x <= W // 30 + 180 and H - 220 <= y <= H - 170:  # save
                             open('control', 'w', encoding='UTF-8').write('\n'.join(control_list))
                             forward, back, left, right, shooting = control_list
+                            sounds['save'].play()
                         elif key == '' and W // 30 <= x <= W // 30 + 180 and H - 160 <= y <= H - 110:  # reset
                             forward, back, left, right, shooting = 'W', 'S', 'A', 'D', 'ЛКМ'
                             control_list = [forward, back, left, right, shooting]
                             open('control', 'w', encoding='UTF-8').write('\n'.join(control_list))
+                            sounds['click'].play()
                             control()
                         else:
                             if event.button == 1 and 'ЛКМ' in control_list and key == '':
@@ -222,16 +236,16 @@ def main_menu(main_or_esc=True):
                 elif screen_value == 'newgame':
                     return
 
-                elif screen_value == 'continue':
-                    return
-
                 elif screen_value == 'exit':
                     if W - 550 <= x <= W - 400 and H - 240 <= y <= H - 190:
-                        exit()
+                        sounds['click'].play()
+                        sleep(0.1)
+                        pg.quit()
+                        sys.exit()
                     elif W - 380 <= x <= W - 230 and H - 240 <= y <= H - 190:
+                        sounds['click'].play()
                         screen_value = 'menu'
                         main_menu()
-
             if event.type == pg.KEYDOWN:
                 if event.key in range(97, 123):
                     if screen_value == 'control':
@@ -245,5 +259,3 @@ def main_menu(main_or_esc=True):
                             key = ''
         clock.tick(60)
         pg.display.flip()
-    if main_or_esc:
-        pg.quit()

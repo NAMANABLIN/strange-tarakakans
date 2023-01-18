@@ -14,6 +14,8 @@ WHITE = (255, 255, 255)
 GREY = (100, 100, 100)
 RED = (255, 0, 0)
 
+# клавиши управления сохраняются как заглавные латинские буквы,
+# их нужно переобразовывать в кностанты из pygame
 letter2konst = {
     'Q': pg.K_q, 'W': pg.K_w, 'E': pg.K_e, 'R': pg.K_r,
     'T': pg.K_t, 'Y': pg.K_y, 'U': pg.K_u, 'I': pg.K_i,
@@ -23,13 +25,14 @@ letter2konst = {
     'X': pg.K_x, 'C': pg.K_c, 'V': pg.K_v, 'B': pg.K_b,
     'N': pg.K_n, 'M': pg.K_m
 }
-mouse_buttons = {'ЛКМ': 1, 'ПКМ': 3}
+mouse_buttons = {'ЛКМ': 0, 'ПКМ': 2}
 
 game_over_image = pg.Surface(SIZE)
 game_over_image.fill(BLACK)
 game_over_image.set_alpha(100)
 
 logo = pg.transform.scale(load_image('logo.png'), (32, 32))
+fon = load_image('fon.png')
 
 gg_right = [load_image(f'gg_right_0{i}.png') for i in range(2, 4)]
 gg_left = [pg.transform.flip(x, True, False) for x in gg_right]
@@ -46,14 +49,13 @@ bullet = load_image('bullet.png')
 player_weapon = load_image('gun.png')
 player_weapon_reverse = pg.transform.flip(player_weapon, False, True)
 
-fon = load_image('fon.png')
 tiles = [load_image(f'tile_0{i}.png') for i in range(1, 11)]
 tile_width = tile_height = 32
 
 pg.init()
 font = pg.font.SysFont("Comic Sans MS", 30)
+font2 = pg.font.SysFont("Comic Sans MS", 50)
 font_color = (203, 181, 128)
-font_color2 = (126, 201, 198)
 button_color = (28, 28, 28)
 
 all_sprites = pg.sprite.Group()
@@ -63,6 +65,7 @@ bullets_group = pg.sprite.Group()
 wall_group = pg.sprite.Group()
 tiles_group = pg.sprite.Group()
 particles_group = pg.sprite.Group()
+
 mixer = pg.mixer
 mixer.init()
 sound_path = 'resources/audio/sound/'
@@ -72,7 +75,6 @@ sounds = {'win': mixer.Sound(sound_path + 'victory_sJDDywi.wav'),
           'death': mixer.Sound(sound_path + 'inecraft_death--online-audio-convert.com.wav'),
           'save': mixer.Sound(sound_path + 'undertale-save.wav')}
 mixer.music.load('resources/audio/music/Toby-Fox-Amalgam.wav')
-
 
 def updates(sc, player=None):
     tiles_group.draw(sc)
@@ -89,7 +91,7 @@ def updates(sc, player=None):
 
 def clear():
     for x in [tiles_group, bullets_group, enemies_group, bullets_group,
-              player_group, particles_group, wall_group]:
+              player_group, particles_group, wall_group, all_sprites]:
         x.empty()
 
 
@@ -98,3 +100,10 @@ def check_walls(new_rect):
         if x.rect.colliderect(new_rect):
             return False
     return True
+
+
+def change_volume(volume):
+    s, m = volume
+    for x in sounds.keys():
+        sounds[x].set_volume(s)
+    mixer.music.set_volume(m)

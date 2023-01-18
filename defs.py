@@ -4,7 +4,8 @@ import sys
 import pygame as pg
 
 
-def split_list(lst: list, n: int) -> list:  # список lst делится на n, функция возращает генератор
+# список lst делится на n, функция возращает генератор
+def split_list(lst: list, n: int) -> list:
     for x in range(0, len(lst), n):
         e_c = lst[x: n + x]
 
@@ -31,6 +32,7 @@ def load_level(filename: str) -> list:
     return level_map
 
 
+# осветление картинки
 def change_brightness(image: pg.image.load, extent: int) -> pg.image.load:
     brightness_multiplier = 1.0
     brightness_multiplier += (extent / 100)
