@@ -1,154 +1,261 @@
-import pygame
+from time import sleep
 
-from config import *
-
-size = width, height = 800, 600
+from config import pg, logo, fon, \
+    font, font_color, button_color, SIZE, W, H, sounds, change_volume
+import sys
+forward, back, left, right, shooting = open('control', encoding='UTF-8').read().strip().split()
+control_list = [forward, back, left, right, shooting]
 
 
 def menu(screen):
-    pygame.display.set_caption('menu')
-    screen.fill((60, 113, 125))
-    pygame.display.flip()
-    buttons_coord = [(width // 2 - 190 // 2, height - 100, 190, 50), (width // 2 - 190 // 2, height - 160, 190, 50),
-                     (width // 2 - 190 // 2, height - 220, 190, 50), (width // 2 - 190 // 2, height - 280, 190, 50)]
-    button(buttons_coord, screen)
+    pg.display.set_caption('Тараканы!')
+    pg.display.set_icon(logo)
+    screen.blit(fon, (0, 0))
+    pg.display.flip()
 
-    text = font.render("Продолжить", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2, height - 280, 180, 50))
+    buttons_coord = [(W // 2 - 190 // 2, H - 100, 190, 50), (W // 2 - 190 // 2, H - 160, 190, 50),
+                     (W // 2 - 190 // 2, H - 220, 190, 50)]
+    txt_coord = [(W // 2 - 190 // 2 + 45, H - 100, 190, 50), (W // 2 - 190 // 2 + 20, H - 160, 180, 50),
+                 (W // 2 - 190 // 2 + 50, H - 220, 180, 50)]
+    txts = ["Выйти", "Настройки", "Играть"]
 
-    text = font.render("Новая игра", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 17, height - 220, 180, 50))
+    button(buttons_coord, txt_coord, txts, screen)
 
-    text = font.render("Настройки", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 20, height - 160, 180, 50))
-
-    text = font.render("Выйти", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 45, buttons_coord[0][1]))
-
-    pygame.display.flip()
+    pg.display.flip()
     screen_value = 'menu'
     return buttons_coord, screen_value
 
 
-def newgame():
-    screen = pygame.display.set_mode(size)
+def new_game():
     screen_value = 'newgame'
     return screen_value
 
 
-def continuegame():
-    screen = pygame.display.set_mode(size)
-    # screen_value = 'continue'
-
-
 def control():
-    screen = pygame.display.set_mode(size)
-    pygame.display.set_caption('control')
-    screen.fill((60, 113, 125))
-    screen.blit(font.render("Вперёд          W", 1, font_color), (width // 30 + 10, height - 550, 180, 50))
-    screen.blit(font.render("Назад             S", 1, font_color), (width // 30 + 10, height - 515, 180, 50))
-    screen.blit(font.render("Влево             A", 1, font_color), (width // 30 + 10, height - 485, 180, 50))
-    screen.blit(font.render("Вправо           D", 1, font_color), (width // 30 + 10, height - 450, 180, 50))
-    screen.blit(font.render("Стрельба        ЛКМ", 1, font_color), (width // 30 + 10, height - 415, 180, 50))
-    buttons_coord = [(width // 2 - 190 // 2, height - 100, 190, 50)]
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[0], 0)
-    text = font.render("Назад", 1, font_color)
-    screen.blit(text, (width // 2 - 190 // 2 + 50, height - 100))
+    global control_list
+    screen = pg.display.set_mode(SIZE)
+    pg.display.set_caption('Управление')
+    screen.blit(fon, (0, 0))
+
+    txt_coord = [(W // 30 + 10, H - 400, 180, 50), (W // 30 + 10, H - 365, 180, 50),
+                 (W // 30 + 10, H - 335, 180, 50), (W // 30 + 10, H - 305, 180, 50),
+                 (W // 30 + 10, H - 275, 180, 50)]
+    txts = ["Вперёд", "Назад", "Влево", "Вправо", "Стрельба"]
+    lol = [12, 14, 14, 12, 10]
+    for i in range(5):
+        screen.blit(font.render(txts[i] + (lol[i] - len(control_list[i])) * ' ' + control_list[i],
+                                1, font_color), txt_coord[i])
+
+    buttons_coord = [(W // 2 - 95, H - 100, 190, 50), (W // 30, H - 220, 180, 50),
+                     (W // 30, H - 160, 180, 50)]
+    txt_coord = [(W // 2 - 95 + 50, H - 100), (W // 30 + 15, H - 220, 180, 50),
+                 (W // 30 + 50, H - 160, 180, 50)]
+    txts = ["Назад", "Сохранить", "Сброс"]
+
+    button(buttons_coord, txt_coord, txts, screen)
+
     screen_value = 'control'
-    return buttons_coord, screen_value
+    return screen_value
 
 
-def options():
-    pygame.display.set_caption('options')
-    screen = pygame.display.set_mode(size)
-    screen.fill((60, 113, 125))
+def options(s, m, main_or_esc):
+    screen = pg.display.set_mode(SIZE)
+    screen.blit(fon, (0, 0))
+    pg.display.set_caption('Настройки')
     screen_value = 'options'
 
-    buttons_coord = [(width // 30, height - 480, 190, 50), (width // 30, height - 420, 190, 50),
-                     (width // 30, height - 360, 190, 50), (width // 30, height - 300, 190, 50)]
+    # Кнопки
+    buttons_coord = [(W // 30, H - 250, 190, 50), (W // 30, H - 190, 190, 50),
+                     (W - 530, H - 250, 190, 50)]
+    txt_coord = [(W // 30 + 10, H - 250, 180, 50), (W // 30 + 55, H - 190, 180, 50),
+                 (W - 530 + 20, H - 250, 180, 50)]
+    txts = ["Управление", "Назад", "Сохранить"]
 
-    button(buttons_coord, screen)
+    button(buttons_coord, txt_coord, txts, screen)
 
-    text = font.render("Звук", 1, font_color)
-    screen.blit(text, (width // 30 + 60, height - 480, 180, 50))
+    txt_coord = [(W // 30 + 60, H - 380, 180, 50), (W // 30 + 40, H - 320, 180, 50)]
+    txts = ["Звук", "Музыка"]
+    for i in range(2):
+        text = font.render(txts[i], 1, font_color)
+        screen.blit(text, txt_coord[i])
 
-    text = font.render("Музыка", 1, font_color)
-    screen.blit(text, (width // 30 + 40, height - 420, 180, 50))
+    # Слайдеры
+    pg.draw.line(screen, (52, 52, 52), (W - 550, H - 355), (W - 300, H - 355), width=5)
+    pg.draw.line(screen, (52, 52, 52), (W - 550, H - 295), (W - 300, H - 295), width=5)
+    sound = pg.draw.rect(screen, (45, 44, 41), (s, H - 370, 10, 30))
+    music = pg.draw.rect(screen, (45, 44, 41), (m, H - 310, 10, 30))
 
-    text = font.render("Управление", 1, font_color)
-    screen.blit(text, (width // 30 + 10, height - 360, 180, 50))
+    volumes_cords = [(sound.x, sound.y, 10, 30), (music.x, music.y, 10, 30)]
+    volumes = [round((s - 250) / 245, 2), round((m - 250) / 245, 2)]
 
-    text = font.render("Назад", 1, font_color)
-    screen.blit(text, (width // 30 + 55, height - 300))
+    if not main_or_esc:
+        button([(W // 2 - 115, H - 100, 220, 50)],
+               [(W // 2 - 110, H - 100)], ["Выйти в меню"], screen)
 
-    pygame.draw.line(screen, (58, 65, 66), (width - 550, height - 455), (width - 300, height - 455), width=5)
-    pygame.draw.line(screen, (58, 65, 66), (width - 550, height - 395), (width - 300, height - 395), width=5)
+    pg.display.flip()
 
-    sound = pygame.draw.rect(screen, (50, 92, 102), (width - 550, height - 470, 10, 30))
-    music = pygame.draw.rect(screen, (50, 92, 102), (width - 550, height - 410, 10, 30))
-
-    sounds = [(sound.x, sound.y, 10, 30), (music.x, music.y, 10, 30)]
-
-    pygame.display.flip()
-
-    return buttons_coord, screen_value, sounds, sound, music
-
-
-def button(buttons_coord, screen):
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[0], 0)
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[1], 0)
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[2], 0)
-    pygame.draw.rect(screen, (50, 92, 102), buttons_coord[3], 0)
+    return buttons_coord, screen_value, volumes_cords, sound, music, volumes
 
 
-def main_menu():
-    pygame.init()
-    screen = pygame.display.set_mode(size)
+def button(buttons_coord, txt_coord, txts, screen):  # отрисовка кнопок
+    for i in range(len(buttons_coord)):
+        pg.draw.rect(screen, button_color, buttons_coord[i], 0)
+        text = font.render(txts[i], 1, font_color)
+        screen.blit(text, txt_coord[i])
 
-    buttons, screen_value = menu(screen)
+
+def exit_game():
+    screen = pg.display.set_mode((800, 600))
+    screen.blit(fon, (0, 0))
+    text = font.render("Вы точно хотите выйти?", 1, font_color)
+    screen.blit(text, (W - 570, H - 300))
+    pg.draw.rect(screen, (45, 44, 41), (W - 550, H - 240, 150, 50))
+    pg.draw.rect(screen, (45, 44, 41), (W - 380, H - 240, 150, 50))
+    screen.blit(font.render("Да", 1, font_color), (W - 550 + 55, H - 240, 180, 50))
+    screen.blit(font.render("Нет", 1, font_color), (W - 380 + 50, H - 240, 180, 50))
+    screen_value = 'exit'
+    return screen_value
+
+
+def main_menu(main_or_esc=True):
+    global forward, back, left, right, shooting, control_list
+    key = ''  # индекс изменяемой кнопки управления в списке control_list
+    screen = pg.display.set_mode(SIZE)
+
     running = True
-    clock = pygame.time.Clock()
+    clock = pg.time.Clock()
+    s = int(open('sound').read().strip().split()[1])  # координата x прямоугольника sound
+    m = int(open('sound').read().strip().split()[3])  # координата x прямоугольника music
+    if main_or_esc:
+        buttons, screen_value = menu(screen)
+    else:
+        buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
+            if event.type == pg.MOUSEBUTTONDOWN:
+                x = event.pos[0]
+                y = event.pos[1]
                 if screen_value == 'menu':
                     for i in buttons:
                         if i[0] <= x <= i[0] + i[2] and i[1] <= y <= i[1] + i[3]:
                             if buttons.index(i) == 0:  # exit
-                                running = False
+                                screen_value = exit_game()
                             elif buttons.index(i) == 1:  # options
-                                buttons, screen_value, sounds, sound, music = options()
-                                print(sounds)
+                                s = int(open('sound').read().strip().split()[1])
+                                m = int(open('sound').read().strip().split()[3])
+                                buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
                             elif buttons.index(i) == 2:  # new game
-                                screen_value = newgame()
-                            elif buttons.index(i) == 3:  # continue
-                                pass
-                                # continuegame()
+                                screen_value = new_game()
+                            sounds['click'].play()
+
                 if screen_value == 'options':
-                    if sounds[0][0] <= x <= sounds[0][0] + sounds[0][2] and sounds[0][1] <= y <= sounds[0][1] + \
-                            sounds[0][3]:  # sound
-                        if pygame.mouse.get_pressed()[0]:
-                            pass
-                    if sounds[1][0] <= x <= sounds[1][0] + sounds[1][2] and sounds[1][1] <= y <= sounds[1][1] + \
-                            sounds[1][3]:  # music
-                        if pygame.mouse.get_pressed()[0]:
-                            pass
+                    if volumes_cords[0][0] <= x <= volumes_cords[0][0] + volumes_cords[0][2] and \
+                            volumes_cords[0][1] <= y <= volumes_cords[0][1] + volumes_cords[0][3]:  # sound
+                        while pg.mouse.get_pressed()[0]:
+                            if W - 550 <= pg.mouse.get_pos()[0]:
+                                if pg.mouse.get_pos()[0] <= W - 305:
+                                    s = pg.mouse.get_pos()[0]
+                                else:
+                                    s = W - 305
+                            else:
+                                s = W - 550
+                            buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
+                    if volumes_cords[1][0] <= x <= volumes_cords[1][0] + volumes_cords[1][2] and volumes_cords[1][
+                        1] <= y <= volumes_cords[1][1] + \
+                            volumes_cords[1][3]:  # music
+                        while pg.mouse.get_pressed()[0]:
+                            if W - 550 <= pg.mouse.get_pos()[0]:
+                                if pg.mouse.get_pos()[0] <= W - 305:
+                                    m = pg.mouse.get_pos()[0]
+                                else:
+                                    m = W - 305
+                            else:
+                                m = W - 550
+                            buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
                     for i in buttons:
                         if i[0] <= x <= i[0] + i[2] and i[1] <= y <= i[1] + i[3]:
-                            if buttons.index(i) == 3:  # back
-                                buttons, screen_value = menu(screen)
-                            elif buttons.index(i) == 2:  # control
-                                buttons, screen_value = control()
+                            if buttons.index(i) == 1:  # back
+                                if main_or_esc:
+                                    buttons, screen_value = menu(screen)
+                                else:
+                                    running = False
+                                sounds['click'].play()
+
+                            elif buttons.index(i) == 0:  # control
+                                screen_value = control()
+                                sounds['click'].play()
                                 break
-                if screen_value == 'control':
-                    if buttons[0][0] <= x <= buttons[0][0] + buttons[0][2] and buttons[0][1] <= y <= buttons[0][1] + \
-                            buttons[0][3]:
-                        buttons, screen_value, sounds, sound, music = options()
-                if screen_value == 'newgame':
-                    running = False
-        pygame.display.flip()
+                            elif buttons.index(i) == 2:  # save
+                                change_volume(volumes)
+                                sounds['save'].play()
+                                open('sound', 'w').write(
+                                    str(volumes[0]) + ' ' + str(s) + '\n' + str(volumes[1]) + ' ' + str(m))
+
+                    if W // 2 - 115 <= x <= W // 2 + 105 and H - 100 <= y <= H - 50:
+                        sounds['click'].play()
+
+                        main_menu()
+                        running = False
+
+                elif screen_value == 'control':
+                    if W // 2 - 95 <= x <= W // 2 - 95 + 190 and H - 100 <= y <= H - 100 + 50:  # back
+                        control_list = [forward, back, left, right, shooting]
+                        s = int(open('sound').read().strip().split()[1])
+                        m = int(open('sound').read().strip().split()[3])
+                        buttons, screen_value, volumes_cords, sound, music, volumes = options(s, m, main_or_esc)
+                        sounds['click'].play()
+                    else:
+                        if key == '' and W // 30 <= x <= W // 30 + 180 and H - 220 <= y <= H - 170:  # save
+                            open('control', 'w', encoding='UTF-8').write('\n'.join(control_list))
+                            forward, back, left, right, shooting = control_list
+                            sounds['save'].play()
+                        elif key == '' and W // 30 <= x <= W // 30 + 180 and H - 160 <= y <= H - 110:  # reset
+                            forward, back, left, right, shooting = 'W', 'S', 'A', 'D', 'ЛКМ'
+                            control_list = [forward, back, left, right, shooting]
+                            open('control', 'w', encoding='UTF-8').write('\n'.join(control_list))
+                            sounds['click'].play()
+                            control()
+                        else:
+                            if event.button == 1 and 'ЛКМ' in control_list and key == '':
+                                key = 4
+                                control_list[4] = ''
+                            elif event.button == 3 and 'ПКМ' in control_list and key == '':
+                                key = 4
+                                control_list[4] = ''
+                            elif event.button == 1 and key == 4 and 'ЛКМ' not in control_list:
+                                control_list[key] = 'ЛКМ'
+                                key = ''
+                            elif event.button == 3 and key == 4 and 'ПКМ' not in control_list:
+                                control_list[key] = 'ПКМ'
+                                key = ''
+                            control()
+
+                elif screen_value == 'newgame':
+                    return
+
+                elif screen_value == 'exit':
+                    if W - 550 <= x <= W - 400 and H - 240 <= y <= H - 190:
+                        sounds['click'].play()
+                        sleep(0.1)
+                        pg.quit()
+                        sys.exit()
+                    elif W - 380 <= x <= W - 230 and H - 240 <= y <= H - 190:
+                        sounds['click'].play()
+                        screen_value = 'menu'
+                        main_menu()
+            if event.type == pg.KEYDOWN:
+                if event.key in range(97, 123):
+                    if screen_value == 'control':
+                        if chr(event.key).upper() in control_list and '' not in control_list:
+                            key = control_list.index(chr(event.key).upper())
+                            control_list[control_list.index(chr(event.key).upper())] = ''
+                            control()
+                        elif chr(event.key).upper() not in control_list and key != '' and key != 4:
+                            control_list[key] = chr(event.key).upper()
+                            control()
+                            key = ''
         clock.tick(60)
+        pg.display.flip()

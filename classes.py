@@ -1,160 +1,266 @@
 import math
-from random import randrange
+from random import randint, choice
+from time import time
 
 from config import *
+from defs import change_brightness
 
 
-class Tile(pg.sprite.Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tiles_group, all_sprites)
-        if tile_type == 'wall':
-            self.add(wall_group)
-        self.image = tile_images[tile_type]
-        self.x, self.y = pos_x, pos_y
-        self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
+class Particle(pg.sprite.Sprite):
+    def __init__(self, pos, dx, dy):
+        super().__init__(particles_group, all_sprites)
+        self.image = choice(bulls)
+        self.rect = self.image.get_rect()
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = GRAVITY
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(SCREEN_RECT):
+            self.kill()
 
 
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(player_group, all_sprites)
-        self.image = gg
-        self.x = 400
-        self.y = 300
-        self.width, self.height = self.image.get_size()
-        self.rect = pg.Rect(x, y, self.width, self.height)
-        self.speed = 5
+        self.image = gg_stand[0]
+        self.rect = pg.Rect(x, y, *self.image.get_size())
+        self.speed = 4.2
+        # содержит кортежи по которым следует передвигаться при нажатии кнопок управления
+        self.button2cords = [(0, -self.speed), (0, self.speed),
+                             (-self.speed, 0), (self.speed, 0)]
 
-        self.timer = 0
-        self.hp = 3
+        self.player_weapon_copy = player_weapon
+
+        self.hp = 1
+        self.death = False
+        self.death_time = 0
+        self.winner = False
+
+        self.kills = 0
+
+        # анимация
+        self.left = False
+        self.right = False
+        self.animCount = 0
+        self.move_xy = False
 
     def handle_weapons(self, display):
+        weapon_x = self.rect.x + 25
+        weapon_y = self.rect.y + 25
+
         mouse_x, mouse_y = pg.mouse.get_pos()
 
-        rel_x, rel_y = mouse_x - self.x, mouse_y - self.y
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
-        if int(angle) not in correct_radius:
-            player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
-        else:
-            player_weapon_copy = pg.transform.rotate(player_weapon, angle)
+        rel_x = mouse_x - weapon_x
+        rel_y = mouse_y - weapon_y
+        angle = round((180 / math.pi) * -math.atan2(rel_y, rel_x))
 
-        display.blit(player_weapon_copy, (
-            self.rect.x + 40 - int(player_weapon.get_width() / 2),
-            self.rect.y - 30 - int(player_weapon_copy.get_height() / 2)))
+        if -90 <= angle <= 90:  # если курсор в правой части экрана
+            self.player_weapon_copy = pg.transform.rotate(player_weapon, angle)
+        else:
+            # переворачивает спрайт игрока по оси x если не передвигается в право или влево
+            if not self.left and not self.right:
+                self.image = pg.transform.flip(self.image, True, False)
+            self.player_weapon_copy = pg.transform.rotate(player_weapon_reverse, angle)
+
+        display.blit(self.player_weapon_copy, (
+            weapon_x - int(player_weapon.get_width() / 2),
+            weapon_y - int(self.player_weapon_copy.get_height() / 2)))
 
     def main(self, display):
-        self.handle_weapons(display)
-        if self.timer == 0:
-            if pg.sprite.spritecollideany(self, enemys_group):
-                self.get_damage()
+        if pg.sprite.spritecollideany(self, enemies_group):  # проверка соприкосается ли игрок к врагу
+            self.get_damage()
+            sounds['death'].play()
+
+        # анимация
+        if self.move_xy:
+            if self.left:
+                self.image = gg_left[self.animCount // 30]
+            else:
+                self.image = gg_right[self.animCount // 30]
         else:
-            self.timer -= 1
+            self.image = gg_stand[round(self.animCount / 60)]
+        self.animCount += 1
 
-    def move(self, axis):  # True - лево, право; False - прямо, вперёд
-        if axis == 'лево':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(-self.speed, 0)):
-                    return
-            self.rect = self.rect.move(-self.speed, 0)
-        if axis == 'право':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(self.speed, 0)):
-                    return
-            self.rect = self.rect.move(self.speed, 0)
-        if axis == 'вперёд':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(0, -self.speed)):
-                    return
-            self.rect = self.rect.move(0, -self.speed)
+        if self.animCount == 60:
+            self.animCount = 0
+        self.handle_weapons(display)
 
-        if axis == 'назад':
-            for x in wall_group:
-                if x.rect.colliderect(self.rect.move(0, self.speed)):
-                    return
-            self.rect = self.rect.move(0, self.speed)
+    def move(self, keys, axis):
+        not_move = True
+        for i, x in enumerate(axis):
+            cords = self.button2cords[i]  # проверка нажатий на клавиши передвежения
+            if keys[x]:
+                move = True
+                a = self.rect.move(cords)
+                if i == 2:
+                    self.left, self.right = True, False
+                elif i == 3:
+                    self.left, self.right = False, True
+                for xx in wall_group:
+                    if xx.rect.colliderect(a):  # проверка соприкосается ли игрок к стене
+                        move = False
+                        break
+                if move:
+                    self.rect = a
+                    not_move = False
+                    self.move_xy = True
+        if not_move:
+            self.left, self.right = False, False
+            self.move_xy = False
 
-    def get_damage(self):
+    def get_damage(self, sound=True):
         self.hp -= 1
-        self.timer = 60
         if self.hp == 0:
-            exit()
+            self.death = True
+            self.death_time = round(time())
+            if sound:
+                sounds['death'].play()
+            else:
+                sounds['win'].play()
+                self.winner = True
+
+    def status(self):
+        return self.death
+
+    def live_time(self, start_time):  # для конечного окна
+        return self.death_time - start_time
+
+    def get_kills(self):
+        return self.kills
+
+    def add_kills(self, kills):
+        self.kills += kills
+
+    def change_hp(self, hp):
+        self.hp = hp
 
 
 class PlayerBullet(pg.sprite.Sprite):
     def __init__(self, x, y, mouse_x, mouse_y):
         super().__init__(bullets_group, all_sprites)
         self.image = bullet
-        self.x = x
-        self.y = y
-        self.mouse_x = mouse_x
-        self.mouse_y = mouse_y
 
-        self.rect = pg.Rect(x, y, bullet.get_width(), bullet.get_height())
+        self.rect = pg.Rect(x, y, *bullet.get_size())
 
         self.speed = 10
         self.angle = math.atan2(y - mouse_y, x - mouse_x)
-        self.x_vel = math.cos(self.angle) * self.speed
-        self.y_vel = math.sin(self.angle) * self.speed
+        rnd = randint(-15, 15) / 10
+        self.x_vel = math.cos(self.angle) * self.speed + rnd
+        self.y_vel = math.sin(self.angle) * self.speed + rnd
 
-    def update(self):
-        if pg.sprite.spritecollideany(self, enemys_group):
-            for enemy in enemys_group:
+    def update(self, player):
+        if pg.sprite.spritecollideany(self, enemies_group):
+            for enemy in enemies_group:
                 if self.rect.colliderect(enemy.rect):
                     self.kill()
-                    enemy.get_damage()
+                    create_particles((self.rect.x, self.rect.y))
+                    if enemy.get_damage():
+                        player.add_kills(1)
+                        sounds['death'].play()
+
+                    sounds['hit'].play()
                     return
         if pg.sprite.spritecollideany(self, wall_group):
             self.kill()
+            create_particles((self.rect.x, self.rect.y))
             return
+        self.rect = self.rect.move(-self.x_vel, -self.y_vel)
 
-        self.rect = self.rect.move(-int(self.x_vel), -int(self.y_vel))
 
-
-class TarakanEnemy(pg.sprite.Sprite):
+class CockroachEnemy(pg.sprite.Sprite):
     def __init__(self, x, y):
-        super().__init__(enemys_group, all_sprites)
-        self.image = tarakan
-        self.x = x
-        self.y = y
-        self.rect = pg.Rect(x, y, tarakan.get_width(), tarakan.get_height())
-        self.hp = 3
-        self.reset_offset = 0
-        self.speed = 1
-        self.offset_x = randrange(-150, 150)
-        self.offset_y = randrange(-150, 150)
+        super().__init__(enemies_group, all_sprites)
+        self.image = tarakan_right[0]
+        self.rect = pg.Rect(x, y, *self.image.get_size())
+        self.hp = 5
+        self.speed = 2
+
+        # радиус проверки на игрока
+        self.nx, self.ny = 32 * 11, 32 * 19
+        self.nw, self.nh = 32 * 22, 32 * 38
+
+        # анимация
+        self.left = False
+        self.right = False
+        self.animCount = 0
+
+        # нужен для осветления противника, если =0 - нет эффекта
+        # эффект появляется на 10 кадров
+        self.timer = 0
 
     def update(self, player):
-        player_x, player_y = player.rect.x, player.rect.y
+        rct = player.rect
         cx, cy = self.rect.x, self.rect.y
-        if cx != player_x:
-            if cx < player_x:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(self.speed, 0)):
-                        return
-                self.rect = self.rect.move(1, 0)
-                self.image = tarakan
-            elif cx > player_x:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(-self.speed, 0)):
-                        return
-                self.image = tarakan_reverse
-                self.rect = self.rect.move(-1, 0)
-        if cy != player_y:
-            if cy < player_y:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(0, self.speed)):
-                        return
-                self.rect = self.rect.move(0, 1)
-            elif cy > player_y:
-                for x in wall_group:
-                    if x.rect.colliderect(self.rect.move(0, -self.speed)):
-                        return
-                self.rect = self.rect.move(0, -1)
+        en_rect = pg.Rect(cx - self.nx, cy - self.ny,
+                          self.nw, self.nh)
+        move = False
+        reverse = False
+        if en_rect.colliderect(rct):
+            player_x, player_y = rct.x, rct.y
+
+            if cx != player_x:
+                if cx < player_x:
+                    new_rect = self.rect.move(self.speed, 0)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+
+                else:
+                    new_rect = self.rect.move(-self.speed, 0)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+                    reverse = True
+
+            if cy != player_y:
+                if cy < player_y:
+                    new_rect = self.rect.move(0, self.speed)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+
+                else:
+                    new_rect = self.rect.move(0, -self.speed)
+                    if check_walls(new_rect):
+                        self.rect = new_rect
+                        move = True
+
+        if move:
+            self.image = tarakan_right[self.animCount // 30].copy()
+        else:
+            self.image = tarakan_stand[round(self.animCount / 60)]
+        if reverse:
+            self.image = pg.transform.flip(self.image, True, False)
+
+        if self.timer:
+            self.image = change_brightness(self.image.copy(), 50)
+            self.timer -= 1
+
+        self.animCount += 1
+        if self.animCount == 60:
+            self.animCount = 0
 
     def get_damage(self):
         self.hp -= 1
+        if not self.timer:
+            self.image = change_brightness(self.image.copy(), 50)
+            self.timer = 10
         if self.hp == 0:
             self.kill()
+            return True
 
 
 class Camera:
@@ -172,15 +278,42 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - self.H // 2)
 
 
+class Tile(pg.sprite.Sprite):
+    def __init__(self, tile_id: int, pos_x: int, pos_y: int):
+        super().__init__(tiles_group, all_sprites)
+        if tile_id != 5:
+            self.add(wall_group)
+        self.image = tiles[tile_id - 1]
+        self.x, self.y = pos_x, pos_y
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+
+
 def generate_level(level):
     player, x, y = None, None, None
+    enemies = 0
     for y in range(len(level)):
         for x in range(len(level[y])):
-            if level[y][x] == '.':
-                Tile('empty', x, y)
-            elif level[y][x] == '#':
-                Tile('wall', x, y)
-            elif level[y][x] == '@':
-                Tile('empty', x, y)
+            tile_id = level[y][x]
+            if tile_id == 0:
+                continue
+            elif tile_id == 12:
+                enemies += 1
+                Tile(5, x, y)
+                CockroachEnemy(tile_width * x, tile_height * y)
+            elif tile_id == 15:
+                Tile(5, x, y)
                 player = Player(tile_width * x, tile_height * y)
-    return player, x, y
+            else:
+                Tile(tile_id, x, y)
+
+    return player, enemies
+
+
+def create_particles(position):
+    # количество создаваемых частиц
+    particle_count = 5
+    # возможные скорости
+    numbers = range(-5, 6)
+    for _ in range(particle_count):
+        Particle(position, choice(numbers), choice(numbers))
