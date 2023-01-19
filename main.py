@@ -14,6 +14,7 @@ pg.display.set_icon(logo)
 
 camera = Camera(SIZE)
 
+
 def game():
     # очистка всех спрайтовых групп, нужна в случае если игра запускается после проигрыша/выигрыша
     clear()

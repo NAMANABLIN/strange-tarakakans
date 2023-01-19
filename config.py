@@ -76,6 +76,7 @@ sounds = {'win': mixer.Sound(sound_path + 'victory_sJDDywi.wav'),
           'save': mixer.Sound(sound_path + 'undertale-save.wav')}
 mixer.music.load('resources/audio/music/Toby-Fox-Amalgam.wav')
 
+
 def updates(sc, player=None):
     tiles_group.draw(sc)
     bullets_group.draw(sc)
