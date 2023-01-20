@@ -41,9 +41,12 @@ def change_brightness(image: pg.image.load, extent: int) -> pg.image.load:
             cord = (x, y)
             pixel = image.get_at(cord)
             if pixel[3] != 0:
-                new_pixel = (int(pixel[0] * brightness_multiplier),
-                             int(pixel[1] * brightness_multiplier),
-                             int(pixel[2] * brightness_multiplier),
+                p1 = int(pixel[0] * brightness_multiplier)
+                p2 = int(pixel[1] * brightness_multiplier)
+                p3 = int(pixel[2] * brightness_multiplier)
+                new_pixel = (p1 if p1 < 255 else 255,
+                             p2 if p2 < 255 else 255,
+                             p3 if p3 < 255 else 255,
                              255)
                 image.set_at(cord, new_pixel)
     return image
